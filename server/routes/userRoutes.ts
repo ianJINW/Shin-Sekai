@@ -9,14 +9,14 @@ import {
 } from "../controllers/userController";
 import uploads from "../middleware/multer";
 
-const router = Router();
+const userRouter = Router();
 
-router.route("/").get(getUsers).post(uploads.single("profile"), register);
-router
+userRouter.route("/").get(getUsers).post(uploads.single("profile"), register);
+userRouter
 	.route("/:id")
 	.get(getUser)
 	.put(uploads.single("profile"), updateUser)
 	.delete(deleteUser);
-router.route("/login").post(login);
+userRouter.route("/login").post(login);
 
-export default router;
+export default userRouter;
