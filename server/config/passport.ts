@@ -4,7 +4,7 @@ import {
 	StrategyOptions,
 	Strategy as JwtStrategy,
 } from "passport-jwt";
-import User from "../models/userModels";
+import User from "../models/userModel";
 import { Request } from "express";
 
 const opts: StrategyOptions = {
