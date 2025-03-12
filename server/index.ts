@@ -6,8 +6,9 @@ import cors from "cors";
 import helmet from "helmet";
 import passport from "passport";
 
-import connectDB from "../../Art-Home/server/config/db";
-import userRoutes from "../../Art-Home/server/routes/userRoutes";
+import connectDB from "./config/db";
+import userRouter from "./routes/userRoutes";
+import animeRouter from "./routes/animeRoutes";
 
 const app = express();
 const frontend = process.env.FRONTEND_URL;
@@ -28,7 +29,8 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
 
-app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/anime", animeRouter);
 
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);

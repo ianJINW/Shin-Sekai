@@ -1,11 +1,9 @@
-import express from 'express';
-const router = express.Router();
-import { getAnimes, getPopularAnimes } from '../controllers/animeController';
+import express from "express";
+const animeRouter = express.Router();
+import { getAnimes, getPopularAnimes } from "../controllers/animeController";
 
+animeRouter.get("/", getAnimes);
 
-router.get('/', getAnimes);
+animeRouter.get("/popular", getPopularAnimes);
 
-router.get('/popular', getPopularAnimes);
-
-
-export default router;
+export default animeRouter;
