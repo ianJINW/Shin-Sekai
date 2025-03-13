@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 
 const baseUrl = "https://api.jikan.moe/v4";
 
-
+//all anime
 export const getAnimes = async (req: Request, res: Response) => {
   try {
     const response = await fetch(`${baseUrl}/anime`);
@@ -19,11 +19,62 @@ export const getAnimes = async (req: Request, res: Response) => {
   }
 };
 
+
+//get popular anime
 export const getPopularAnimes = async (req: Request, res: Response) => {
     try {
         const response = await fetch(
           `${baseUrl}/top/anime?filter=bypopularity`
         );
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        if (error instanceof Error) {
+        res.status(404).json({ message: error.message });
+        } else {
+        res.status(404).json({ message: 'An unknown error occurred' });
+        }
+    }
+    }
+
+
+    //get top anime
+export const getTopAnimes = async (req: Request, res: Response) => {
+    try {
+        const response = await fetch(
+          `${baseUrl}/top/anime`
+        );
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        if (error instanceof Error) {
+        res.status(404).json({ message: error.message });
+        } else {
+        res.status(404).json({ message: 'An unknown error occurred' });
+        }
+    }
+    }
+
+    //get upcoming anime
+export const getUpcomingAnimes = async (req: Request, res: Response) => {
+  try{
+    const response = await fetch(`${baseUrl}/top/anime?filter=upcoming`);
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(404).json({ message: error.message });
+    } else {
+      res.status(404).json({ message: 'An unknown error occurred' });
+    }
+  }
+}
+
+    //get anime by id
+export const getAnimeById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const response = await fetch(`${baseUrl}/anime/${id}`);
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {

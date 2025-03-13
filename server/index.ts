@@ -15,10 +15,10 @@ const frontend = process.env.FRONTEND_URL;
 const PORT = process.env.PORT;
 
 app.use(
-	cors({
-		origin: frontend,
-		credentials: true,
-	})
+  cors({
+    origin: frontend,
+    credentials: true,
+  })
 );
 
 connectDB();
@@ -33,5 +33,5 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/anime", animeRouter);
 
 app.listen(PORT, () => {
-	console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
