@@ -40,7 +40,12 @@ export const register = async (req: Request, res: Response) => {
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
-		const newUser = new User({ email, username, password: hashedPassword });
+		const newUser = new User({
+			email,
+			username,
+			password: hashedPassword,
+			image,
+		});
 		await newUser.save();
 
 		res.status(201).json({ message: "User registered successfully" });

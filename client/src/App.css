@@ -1,64 +1,42 @@
-@import "tailwindcss";
-
 #root {
-	max-width: 1280px;
-	margin: 0 auto;
-	padding: 2rem;
-	text-align: center;
-	--color-primary: #213547;
-	--color-secondary: #ffed4a;
-	--font-base: "Helvetica Neue", sans-serif;
-	--font-heading: "Georgia", serif;
-	--spacing-unit: 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
 @keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	a:nth-of-type(2) .logo {
-		animation: logo-spin infinite 20s linear;
-	}
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
 }
 
-@layer base {
-	@font-face {
-		font-family: "Helvetica Neue";
-		font-style: normal;
-		font-weight: 400;
-		src: local("Helvetica Neue"), local("HelveticaNeue"),
-			url("/fonts/helvetica-neue.woff2") format("woff2");
-	}
-
-	h1 {
-		text-decoration: underline;
-		@apply font-bold;
-	}
+.card {
+  padding: 2em;
 }
 
-@theme {
-	--color-primary: #213547;
-	--color-secondary: #ffed4a;
-	--font-base: "Helvetica Neue", sans-serif;
-	--font-heading: "Georgia", serif;
-	--spacing-unit: 1rem;
-
-	--animate-fade: fade-in 0.5s ease-out;
-
-	@keyframes fade-in {
-		from {
-			opacity: 0;
-			transform: translateY(1rem);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
+.read-the-docs {
+  color: #888;
 }
