@@ -1,49 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 import { RegisterUser } from "../utils/api";
-import { useNavigate } from "react-router-dom";
 
+interface RegisterFormData {
+  username: string;
+  email: string;
+  password: string;
+  image: File | null;
+}
 
 const Register: React.FC = () => {
-  const [data, setData] = useState<{ email: string; password: string; username: string; image: string | File }>({ email: '', password: '', username: '', image: '' });
-  const navigate = useNavigate()
+  // Local state for form fields
+  const [data, setData] = useState<RegisterFormData>({
+    email: '',
+    password: '',
+    username: '',
+    image: null
+  });
+
+
   const { mutate, isPending, isError, error } = RegisterUser();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Handler for form submission: create a FormData object
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    let imageString: string | undefined = typeof data.image === 'string' ? data.image : undefined;
-
-    if (data.image instanceof File) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        imageString = reader.result as string;
-        const formData = {
-          email: data.email,
-          password: data.password,
-          username: data.username,
-          image: imageString,
-        };
-        mutate(formData);
-      };
-      reader.readAsDataURL(data.image);
-    } else {
-      const formData = {
-        email: data.email,
-        password: data.password,
-        username: data.username,
-        image: imageString,
-      };
-      mutate(formData);
+    // Create a FormData instance and append fields for file upload
+    const formData = new FormData();
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('username', data.username);
+    if (data.image) {
+      formData.append('profile', data.image);
     }
-    navigate('/login');
+
+    // Trigger the mutation with the FormData
+    mutate(formData);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler for file input change event
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setData({ ...data, image: e.target.files[0] });
     }
   };
-
 
   return (
     <div>
@@ -54,6 +53,7 @@ const Register: React.FC = () => {
         <form
           onSubmit={handleSubmit}
           className="flex flex-col m-1 p-1 text-black rounded-lg border-gray-600"
+          encType="multipart/form-data"
         >
           <label htmlFor="username">Username</label>
           <input
@@ -85,13 +85,14 @@ const Register: React.FC = () => {
           <label htmlFor="image">Profile Image</label>
           <input
             id="image"
+            name="profile"
             type="file"
-            accept="image/*" // Restrict file types to images
-            onChange={handleFileChange} // Handle file selection
+            accept="image/*"
+            onChange={handleFileChange}
           />
 
           <button className="cursor-pointer" type="submit" disabled={isPending}>
-            {isPending ? `Registering ...` : 'Register'}
+            {isPending ? 'Registering ...' : 'Register'}
           </button>
           {isError && <p>Error: {error?.message || 'An error occurred'}</p>}
         </form>
@@ -101,3 +102,4 @@ const Register: React.FC = () => {
 };
 
 export default Register;
+

@@ -19,9 +19,8 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/about" element={<About />} />
-
-					<Route path="/login" element={<Login />} >Login</Route>
-					<Route path="/register" element={<Register />} >Rgeister</Route>
+					<Route path="/login" element={<Login />} />
+					<Route path="/register" element={<Register />} />
 				</Routes>
 			</Router>
 			<div className="flex flex-col m-1 p-1 text-black">
