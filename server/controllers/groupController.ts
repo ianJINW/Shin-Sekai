@@ -10,6 +10,89 @@ export const getGroups = async (req: Request, res: Response) => {
   }
 };
 
+export const getGroupMembers = async (req: Request, res: Response) => {
+  const { groupId } = req.params;
+  try {
+    const members = await Group.findById(groupId).populate(
+      "members.user",
+      "name email"
+    );
+    if (!members) {
+      res.status(404).json({ message: "Group not found" });
+      return;
+    }
+    res.json({ members, message: "すごいすごい" });
+  } catch (error) {
+    res.status(500).json({ message: "ばかばか" });
+  }
+};
+
+export const getGroup = async (req: Request, res: Response) => {
+  const { groupId } = req.params;
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) {
+      res.status(404).json({ message: "Group not found" });
+      return;
+    }
+    res.json({ group, message: "すごいすごい" });
+  } catch (error) {
+    res.status(500).json({ message: "ばかばか" });
+  }
+};
+
+export const updateGroup = async (req: Request, res: Response) => {
+  const { groupId } = req.params;
+  const { name, description, image, user } = req.body;
+  if (!user) {
+    res.status(400).json({ message: "ばかばか" });
+    return;
+  }
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) {
+      res.status(404).json({ message: "Group not found" });
+      return;
+    }
+
+    const member = group.members.find(
+      (member) => member.user.toString() === user
+    );
+    if (!member) {
+      res.status(403).json({ message: "ばかばか" });
+      return;
+    }
+
+    if (member.role !== "owner") {
+      res.status(403).json({ message: "ばかばか" });
+      return;
+    }
+
+    group.name = name;
+    group.description = description;
+    group.image = image;
+    await group.save();
+    res.json({ group, message: "すごいすごい" });
+  } catch (error) {
+    res.status(500).json({ message: "ばかばか" });
+  }
+
+}
+
+export const getGroupMember = async (req: Request, res: Response) => {
+  const { groupId, userId } = req.params;
+  try {
+    const member = await Group.findById(groupId).populate("members.user");
+    if (!member) {
+      res.status(404).json({ message: "Member not found" });
+      return;
+    }
+    res.json({ member, message: "すごいすごい" });
+  } catch (error) {
+    res.status(500).json({ message: "ばかばか" });
+  }
+}
+
 export const createGroup = async (req: Request, res: Response) => {
   const { name, description, image, user } = req.body;
   if (!user) {
@@ -21,7 +104,7 @@ export const createGroup = async (req: Request, res: Response) => {
       name,
       description,
       image,
-      members: [{ user, role: "owner" }],
+      members: [{ user, role: "owner, admin" }],
     });
 
     await group.save();
@@ -64,7 +147,8 @@ export const joinGroup = async (req: Request, res: Response) => {
 
 export const promoteUser = async (req: Request, res: Response) => {
   const { groupId } = req.params;
-  const { user } = req.body;
+  const { user, adminId } = req.body;
+  console.log(req.body);
   try {
     const group = await Group.findById(groupId);
     if (!group) {
@@ -72,21 +156,37 @@ export const promoteUser = async (req: Request, res: Response) => {
       return;
     }
 
-    const member = group.members.find((member) => member.user === user);
+    //check if the user is an admin or owner
+
+    const requestingUser = group.members.find(
+      (m) => m.user.toString() === adminId
+    );
+    if (
+      !requestingUser ||
+      (requestingUser.role !== "admin" && requestingUser.role !== "owner")
+    ) {
+      res.status(403).json({ message: "ばかばか" });
+      return;
+    }
+
+    //find the user to promote
+    const member = group.members.find(
+      (member) => member.user.toString() === user
+    );
     if (!member) {
       res.status(404).json({ message: "Member not found" });
       return;
     }
 
-    const isAdmin = group.members.find(
-      (member) => member.user === req.user && member.role === "owner"
-    );
-    if (!isAdmin) {
+    //check if the user is already an admin
+    if (member.role === "admin") {
       res.status(403).json({ message: "ばかばか" });
       return;
     }
+
     member.role = "admin";
     await group.save();
+    res.json({ group, message: "すごい" });
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
   }
@@ -94,7 +194,7 @@ export const promoteUser = async (req: Request, res: Response) => {
 
 export const demoteUser = async (req: Request, res: Response) => {
   const { groupId } = req.params;
-  const { user } = req.body;
+  const { user, adminId } = req.body;
   try {
     const group = await Group.findById(groupId);
     if (!group) {
@@ -102,22 +202,34 @@ export const demoteUser = async (req: Request, res: Response) => {
       return;
     }
 
-    const member = group.members.find((member) => member.user === user);
+    const requestingUser = group.members.find(
+      (m) => m.user.toString() === adminId
+    );
+    if (
+      !requestingUser ||
+      (requestingUser.role !== "admin" && requestingUser.role !== "owner")
+    ) {
+      res.status(403).json({ message: "is not admin or owner" });
+      return;
+    }
+
+    const member = group.members.find(
+      (member) => member.user.toString() === user
+    );
     if (!member) {
       res.status(404).json({ message: "Member not found" });
       return;
     }
 
-    const isAdmin = group.members.find(
-      (member) => member.user === req.user && member.role === "owner"
-    );
-    if (!isAdmin) {
-      res.status(403).json({ message: "ばかばか" });
+    //check if user is member and not admin
+    if (member.role === "member") {
+      res.status(403).json({ message: "is a member" });
       return;
     }
 
     member.role = "member";
     await group.save();
+    res.json({ group, message: "User demoted successfully" });
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
   }
@@ -132,18 +244,70 @@ export const leaveGroup = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Group not found" });
       return;
     }
-    const member = group.members.find((member) => member.user === user);
+    const member = group.members.find(
+      (member) => member.user.toString() === user
+    );
     if (!member) {
       res.status(404).json({ message: "Member not found" });
       return;
     }
+
+    //check if the user is the owner
     if (member.role === "owner") {
-      res.status(403).json({ message: "ばかばか" });
+      res.status(403).json({ message: "owner must transfer ownership" });
       return;
     }
-    //remove member
+
+    const index = group.members.findIndex(
+      (member) => member.user.toString() === user
+    );
+    group.members.splice(index, 1);
 
     await group.save();
+    res.json({ group, message: "すごいすごい" });
+  } catch (error) {
+    res.status(500).json({ message: "ばかばか" });
+  }
+};
+
+export const transferOwnership = async (req: Request, res: Response) => {
+  const { groupId } = req.params;
+  const { user, newOwner } = req.body;
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) {
+      res.status(404).json({ message: "Group not found" });
+      return;
+    }
+
+    //check if the user is the member
+    const member = group.members.find(
+      (member) => member.user.toString() === user
+    );
+    if (!member) {
+      res.status(404).json({ message: "Member not found" });
+      return;
+    }
+
+    //check if the user is the owner
+    if (member.role !== "owner") {
+      res.status(403).json({ message: "is owner" });
+      return;
+    }
+
+    //check if new owner is a admin
+    const newOwnerMember = group.members.find(
+      (member) => member.user.toString() === newOwner
+    );
+    if (!newOwnerMember) {
+      res.status(404).json({ message: "New owner not found" });
+      return;
+    }
+
+    member.role = "admin";
+    newOwnerMember.role = "owner";
+    await group.save();
+    res.json({ group, message: "すごい" });
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
   }
