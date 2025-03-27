@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "shinsekai",
+    "description": "group",
+    "members": "23"
+  },
+  {
+    "id": 2,
+    "name": "sekai",
+    "description": "group",
+    "members": "3"
+  },
+  {
+    "id": 3,
+    "name": "shin",
+    "description": "group",
+    "members": "2"
+  },
+  {
+    "id": 4,
+    "name": "kai",
+    "description": "group",
+    "members": "230"
+  }
+]
