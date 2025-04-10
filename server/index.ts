@@ -12,6 +12,7 @@ import animeRouter from "./routes/animeRoutes";
 import postRouter from "./routes/postRoutes";
 import commentRouter from "./routes/commentRoutes";
 import groupRouter from "./routes/groupRoutes";
+import likeRouter from "./routes/likesRoutes";
 
 const app = express();
 const frontend = process.env.FRONTEND_URL;
@@ -37,6 +38,7 @@ app.use("/api/v1/anime", animeRouter);
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/groups", groupRouter);
+app.use("/api/v1/likes", likeRouter);
 
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);

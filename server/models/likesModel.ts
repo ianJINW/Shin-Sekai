@@ -1,30 +1,34 @@
 import mongoose from "mongoose";
 
-const likesSchema = new mongoose.Schema({
-  like: {
-    type: Boolean,
-    default: true,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-    postId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Post",
+const likesSchema = new mongoose.Schema(
+  {
+    itemId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Item",
     },
-  createdAt: {
-    type: Date, 
-    default: Date.now,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    type: {
+      type: String,
+      enum: ["like", "dislike"],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+  {
+    timestamps: true,
+  }
+);
 
-}, {
-  timestamps: true,});
+const Like = mongoose.model("Likes", likesSchema);
 
-const Likes = mongoose.model("Likes", likesSchema);
-
-export default Likes;
+export default Like;
