@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Group from "../models/groupModel";
+import { cloudinary } from "../middleware/multer";
 
 export const getGroups = async (req: Request, res: Response) => {
   try {
@@ -76,8 +77,7 @@ export const updateGroup = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
   }
-
-}
+};
 
 export const getGroupMember = async (req: Request, res: Response) => {
   const { groupId, userId } = req.params;
@@ -91,10 +91,26 @@ export const getGroupMember = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
   }
-}
+};
 
 export const createGroup = async (req: Request, res: Response) => {
-  const { name, description, image, user } = req.body;
+  let image = "";
+  if (req.file) {
+    const file = req.file;
+    image = await new Promise<string>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ upload_preset: "art-gallery" }, (error, result) => {
+          if (result) resolve(result.url);
+          else reject(error);
+        })
+        .end(file.buffer);
+    }).catch((error) => {
+      res.status(500).json({ message: "Image upload failed", error });
+      return "";
+    });
+  }
+
+  const { name, description, user } = req.body;
   if (!user) {
     res.status(400).json({ message: "ばかばか" });
     return;

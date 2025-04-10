@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Post from "../models/postModel";
+import { cloudinary } from "../middleware/multer";
 
 export const getPosts = async (req: Request, res: Response) => {
   try {
@@ -25,10 +26,26 @@ export const getPost = async (req: Request, res: Response) => {
 };
 
 export const creatPost = async (req: Request, res: Response) => {
-  const { title, content, media, user } = req.body;
+  let media = ""
+  const { title, content, user } = req.body;
   if (!user) {
     res.status(400).json({ message: "だめです" });
     return;
+  }
+
+ if (req.file) {
+    const file = req.file;
+    media = await new Promise<string>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ upload_preset: "art-gallery" }, (error, result) => {
+          if (result) resolve(result.url);
+          else reject(error);
+        })
+        .end(file.buffer);
+    }).catch((error) => {
+      res.status(500).json({ message: "Image upload failed", error });
+      return "";
+    });
   }
 
   try {
