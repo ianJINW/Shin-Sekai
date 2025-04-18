@@ -1,69 +1,156 @@
+import { useState } from "react";
+import { Header } from "../../components/layout/Header";
+import { Sidebar } from "../../components/layout/Sidebar";
+import { Footer } from "../../components/layout/Footer";
+import { GroupCard } from "../../components/groups/GroupCard";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { groups, currentUser } from "../../lib/data";
 
-import { useEffect, useState } from "react";
-import image from "../../assets/47698 (1).png";
-import data from "./data.json";
-import { Link } from "react-router-dom";
-import { useGroupStore } from "../../stores/group.store";
-
- interface GroupGetails {
-   name: string;
-   description: string;
-   members: number;
- }
 const Groups = () => {
-  const {fetchGroups} = useGroupStore((state) => ({
-    fetchGroups: state.fetchGroups,
-  }));
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("my-groups");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-  fetchGroups()
-  }, [ fetchGroups]);
+  const myGroups = groups.filter((group) =>
+    group.members.includes(currentUser.id)
+  );
+  const otherGroups = groups.filter(
+    (group) => !group.members.includes(currentUser.id)
+  );
+
+  // Filter groups based on search query
+  const filteredMyGroups = myGroups.filter(
+    (group) =>
+      group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredOtherGroups = otherGroups.filter(
+    (group) =>
+      group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="w-[95%] mx-auto p-6 bg-white shadow-lg rounded-xl border">
-      {/* Search Bar */}
-      <div className="mb-4">
-        <input
-          type="search"
-          placeholder="Search groups..."
-          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+    <div className="min-h-screen flex flex-col bg-muted/30">
+      <Header />
+
+      <div className="flex-1 flex">
+        <Sidebar />
+
+        <main className="flex-1 max-w-screen-xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <h1 className="text-3xl font-bold">Groups</h1>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                placeholder="Search groups..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="min-w-[200px]"
+              />
+              <Button className="bg-anime-primary hover:bg-anime-primary/90">
+                Create New Group
+              </Button>
+            </div>
+          </div>
+
+          <Tabs defaultValue="my-groups" onValueChange={setActiveTab}>
+            <TabsList className="w-full max-w-md grid grid-cols-2 mb-6">
+              <TabsTrigger value="my-groups">My Groups</TabsTrigger>
+              <TabsTrigger value="discover">Discover</TabsTrigger>
+            </TabsList>
+
+            {/* My Groups Tab */}
+            {activeTab === "my-groups" && (
+              <div className="animate-fade-in">
+                {filteredMyGroups.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredMyGroups.map((group) => (
+                      <GroupCard key={group.id} group={group} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 anime-card">
+                    {searchQuery ? (
+                      <>
+                        <h3 className="text-lg font-medium mb-2">
+                          No matching groups found
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Try a different search term or check the discover tab
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-lg font-medium mb-2">
+                          You haven't joined any groups yet
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Join groups to connect with others who share your
+                          interests
+                        </p>
+                        <Button
+                          onClick={() => setActiveTab("discover")}
+                          className="bg-anime-primary hover:bg-anime-primary/90"
+                        >
+                          Discover Groups
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Discover Tab */}
+            {activeTab === "discover" && (
+              <div className="animate-fade-in">
+                <h2 className="text-xl font-semibold mb-4">
+                  Popular Categories
+                </h2>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {[
+                    "Anime Series",
+                    "Manga",
+                    "Genre",
+                    "Creative",
+                    "Discussions",
+                    "News",
+                  ].map((category) => (
+                    <Button
+                      key={category}
+                      variant="outline"
+                      className="rounded-full"
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+
+                {filteredOtherGroups.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredOtherGroups.map((group) => (
+                      <GroupCard key={group.id} group={group} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 anime-card">
+                    <h3 className="text-lg font-medium mb-2">
+                      No matching groups found
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Try a different search term or create your own group
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </Tabs>
+        </main>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border border-gray-300 rounded-lg">
-          {/* Table Header */}
-          <thead className="bg-blue-500 text-white">
-            <tr>
-              <th className="py-3 px-4 text-left">Group Name</th>
-              <th className="py-3 px-4 text-left">Description</th>
-              <th className="py-3 px-4 text-left">Members</th>
-            </tr>
-          </thead>
-
-          {/* Table Body */}
-          <tbody>
-            {data.map((group, index) => (
-              <tr
-                key={group.name}
-                className={`border-b ${
-                  index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                }`}
-              >
-                <td className="py-3 px-4 flex">
-                  <Link to={`/groups/${group.id}`}>
-                    <img src={image} alt="group" className="w-10 h-10 mr-2" />
-                    {group.name}
-                  </Link>
-                </td>
-
-                <td className="py-3 px-4">{group.description}</td>
-                <td className="py-3 px-4">{group.members}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Footer />
     </div>
   );
 };

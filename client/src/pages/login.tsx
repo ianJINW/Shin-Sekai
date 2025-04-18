@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { LoginUser } from "../utils/api";
 import { useNavigate } from "react-router-dom";
-import AuthStore from "../stores/auth.store";
+import AuthStore from "../store/auth.store";
 
 const Login: React.FC = () => {
-  const [data, setData] = useState({ email: '', password: '' });
+  const [data, setData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
   const user = AuthStore((state) => state.user);
   const { mutate, isPending, isError, error } = LoginUser();
 
-
   useEffect(() => {
     if (user) {
-      navigate('/')
+      navigate("/");
     }
-  }, [user, navigate])
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,11 +21,11 @@ const Login: React.FC = () => {
     const formData = {
       email: data.email,
       password: data.password,
-      username: '',
-      image: ''
+      username: "",
+      image: "",
     };
 
-    mutate(formData);;
+    mutate(formData);
   };
 
   return (
@@ -35,7 +34,10 @@ const Login: React.FC = () => {
         <legend>
           <h1>Login</h1>
         </legend>
-        <form onSubmit={handleSubmit} className="flex flex-col m-1 p-1 text-black radius-100 border-gray-600">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col m-1 p-1 text-black radius-100 border-gray-600"
+        >
           <label>Email</label>
           <input
             type="email"
@@ -51,7 +53,7 @@ const Login: React.FC = () => {
           />
 
           <button className="cursor-pointer" type="submit">
-            {isPending ? `Logging in ...` : 'Login'}
+            {isPending ? `Logging in ...` : "Login"}
           </button>
           {isError && <p>Error: {error?.message}</p>}
         </form>
