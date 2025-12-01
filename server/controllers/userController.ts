@@ -14,7 +14,7 @@ export const register = async (req: Request, res: Response) => {
 	let image = "";
 	const { email, username, password } = req.body;
 
-	if (req.file) {
+	if (req.file) { 
 		const file = req.file;
 		image = await new Promise<string>((resolve, reject) => {
 			cloudinary.uploader

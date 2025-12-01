@@ -18,6 +18,7 @@ export interface User {
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   register: (user: Partial<User>, password: string) => Promise<void>;
@@ -27,6 +28,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType>({
   user: null,
   isAuthenticated: false,
+  isLoading: false,
   login: async () => {},
   logout: () => {},
   register: async () => {},
@@ -53,6 +55,7 @@ const mockUser: User = {
 // Provider component
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(mockUser); // Using mock user for development
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const login = async (username: string, password: string) => {
     // Mock login logic - would connect to backend in production
@@ -75,6 +78,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         login,
         logout,
         register,

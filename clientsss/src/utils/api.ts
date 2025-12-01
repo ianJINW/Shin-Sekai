@@ -36,7 +36,9 @@ interface RegisterResponse {
   };
 }
 
-const register = async (credentials: formData): Promise<RegisterResponse> => {
+const register = async (
+  credentials: formData | FormData
+): Promise<RegisterResponse> => {
   const req = await api.post("user/", credentials);
   return req.data;
 };

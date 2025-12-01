@@ -37,8 +37,8 @@
     "server": "cd server && npm run dev",
     "clientB": "cd client && npm run build",
     "serverB": "cd server && npm run build",
-    "dev": "concurrently \"npm run client\" \"npm run server\"",
-    "build": "concurrently \"npm run clientB\" \"npm run serverB\""
+    "dev": "concurrently -n client,server -c green,blue \"npm run client\" \"npm run server\"",
+    "build": "concurrently -n clientB,serverB -c yellow,magenta \"npm run clientB\" \"npm run serverB\""
   },
   "repository": {
     "type": "git",
