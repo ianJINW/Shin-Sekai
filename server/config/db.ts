@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import { envConfig } from "./env.config";
 
-const mongoURI = process.env.MONGO_URI as string;
-//console.log(mongoURI);
+const mongoURI = envConfig.mongoURI
+
 const connectDB = async () => {
 	try {
 		const conn = await mongoose.connect(mongoURI, {});

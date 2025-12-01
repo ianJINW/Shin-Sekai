@@ -3,8 +3,9 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel";
 import bcrypt from "bcryptjs";
 import { cloudinary } from "../middleware/multer";
+import { envConfig } from "../config/env.config";
 
-const secretKey = process.env.JWT_SECRET;
+const secretKey = envConfig.jwtSecret;
 if (!secretKey) {
 	throw new Error("JWT_SECRET is not defined in environment variables");
 }
