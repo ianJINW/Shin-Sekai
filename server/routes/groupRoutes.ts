@@ -9,13 +9,17 @@ import {
   leaveGroup,
   transferOwnership,
   getGroupMember,
-  updateGroup
+  updateGroup,
+  getGroup
 } from "../controllers/groupController";
 import uploads from "../middleware/multer";
 
 const router = Router();
 
 router.route("/").get(getGroups).post(uploads.single("image"), createGroup);
+
+router.route("/:groupId").get(getGroup);
+
 
 router.route("/:groupId/members").get(getGroupMembers);
 

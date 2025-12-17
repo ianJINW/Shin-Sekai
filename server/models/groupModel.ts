@@ -26,7 +26,6 @@ const groupSchema = new mongoose.Schema({
       },
       role: {
         type: String,
-        enum: ["member", "admin", "owner"], // Role-based system
         default: "member",
       },
       joinedAt: { type: Date, default: Date.now },
@@ -35,7 +34,6 @@ const groupSchema = new mongoose.Schema({
   postsCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
-
 
 
 const groupModel = mongoose.model("Group", groupSchema);

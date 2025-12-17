@@ -82,7 +82,7 @@ export const updateGroup = async (req: Request, res: Response) => {
 export const getGroupMember = async (req: Request, res: Response) => {
   const { groupId, userId } = req.params;
   try {
-    const member = await Group.findById(groupId).populate("members.user");
+    const member = await Group.findById(groupId).populate(`members.${userId}`);
     if (!member) {
       res.status(404).json({ message: "Member not found" });
       return;
@@ -124,8 +124,10 @@ export const createGroup = async (req: Request, res: Response) => {
     });
 
     await group.save();
+
     res.json({ group, message: "すごいすごい" });
   } catch (error) {
+    console.log(`error ${error}`);
     res.status(500).json({ message: "ばかばか" });
   }
 };
