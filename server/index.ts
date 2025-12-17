@@ -13,10 +13,15 @@ import postRouter from "./routes/postRoutes";
 import commentRouter from "./routes/commentRoutes";
 import groupRouter from "./routes/groupRoutes";
 import likeRouter from "./routes/likesRoutes";
+import { createServer, Server } from "http";
+import { Server as socketServer } from "socket.io";
+import { initSocket } from "./config/socket";
 
 const app = express();
 const frontend = process.env.FRONTEND_URL;
 const PORT = process.env.PORT;
+
+const server = createServer(app)
 
 app.use(
 	cors({
@@ -24,8 +29,6 @@ app.use(
 		credentials: true,
 	})
 );
-
-connectDB();
 
 app.use(helmet());
 app.use(express.json());
@@ -40,6 +43,18 @@ app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/groups", groupRouter);
 app.use("/api/v1/likes", likeRouter);
 
-app.listen(PORT, () => {
+const io = new socketServer(server, {
+	cors: {
+		origin: process.env.FRONTEND_URL,
+		methods: ["GET", "POST"],
+		credentials: true,
+	},
+	cookie: true
+})
+
+connectDB();
+initSocket(io)
+
+server.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });
