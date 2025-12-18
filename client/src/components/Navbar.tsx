@@ -25,7 +25,7 @@ const Navbar: FC = () => {
   const navigate = useNavigate()
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 lg:px-8 py-3 transition-all duration-300">
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 lg:px-8 py-3 transition-all duration-300">
       <div className="max-w-screen-xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <img src={logo} alt="App logo" className="h-8 w-8" />
@@ -74,7 +74,10 @@ const Navbar: FC = () => {
           {/* Auth Buttons */}
           {isAuth ? (
             <Button
-              onClick={logout}
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
               variant="secondary"
               className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label="Logout"

@@ -32,8 +32,6 @@ const Group: FC = () => {
 
   const group = data?.group;
   console.log('group', group);
-
-
   return (
     <main className="group-page">
       {!group ? (
