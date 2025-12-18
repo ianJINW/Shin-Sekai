@@ -1,3 +1,10 @@
+export interface Member {
+  user: string
+  role: string
+  id: number
+  joinedAt: Date
+}
+
 import { useCallback, useState, type FC, type FormEvent } from "react";
 import { useGetInfo, usePostInfo } from "../lib/apiRequests";
 import { useParams } from "react-router-dom";
@@ -5,7 +12,7 @@ import useSocket, { socket } from "../hooks/useSocket";
 
 const Group: FC = () => {
 
-  const { id } = useParams<{ id: string }>(); // Ensure param key matches your route
+  const { id } = useParams<{ id: string }>();
   const { data, isPending, isError, error } = useGetInfo(`/api/v1/groups/${id}`);
   const { isError: sendingError, error: sendError } =
     usePostInfo(`/api/v1/groups/${id}`);
@@ -69,7 +76,7 @@ const Group: FC = () => {
           <h2>Members</h2>
           {group.members && group.members.length > 0 ? (
             <ul>
-                {group.members.map((member: any) => (
+                {group.members.map((member: Member) => (
                 <li key={member.id}>
                   <span>
                     {member.user} — <em>{member.role}</em>

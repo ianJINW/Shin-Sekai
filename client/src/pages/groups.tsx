@@ -1,6 +1,15 @@
+interface GroupItem {
+  _id: number
+  image: string
+  name: string
+  description: string
+  members: Member
+}
+
 import { type FC } from "react"
 import { useGetInfo } from "../lib/apiRequests"
 import { useNavigate } from "react-router-dom"
+import type { Member } from "./group"
 
 const Groups: FC = () => {
   const { data, isPending, isError, error } = useGetInfo("/api/v1/groups")
@@ -37,7 +46,7 @@ const Groups: FC = () => {
       ) : (
         <section className="gap-4 flex flex-row flex-wrap justify-center align-center">
 
-          {groups.map((group: any) => (
+            {groups.map((group: GroupItem) => (
             <article key={group._id} className="group-card flex flex-col justify-center align-center gap-2" onClick={() => navigate(`/groups/${group._id}`)}>
               <figure>
                 <img src={group.image} alt={group.name} />

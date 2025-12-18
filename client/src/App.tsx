@@ -18,6 +18,7 @@ function App() {
   const routes = [
     { path: '/register', element: <Auth mode='register' /> },
     { path: '/login', element: <Auth mode='login' /> },
+    { path: '/logout', element: <Auth mode='login' /> },
     { path: '/anime', element: <Animes /> },
     { path: '/anime/:id', element: <Anime /> },
     { path: '/groups', element: <Groups /> },

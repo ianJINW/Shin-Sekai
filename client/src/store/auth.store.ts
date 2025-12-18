@@ -1,5 +1,7 @@
+import { toast } from "sonner"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
+import { getTimedGreetings } from "../components/exports"
 
 export interface User {
   id: string
@@ -63,8 +65,12 @@ const useAuthStore = create<UserStore>()(
 
     partialize: (state) => ({ user: state.user, isAuth: state.isAuth, isAdmin: state.isAdmin }),
     onRehydrateStorage: () => {
-      return () => {
-        console.log('Rehydrated');
+      return (user) => {
+
+        const greetiing = getTimedGreetings()
+        const usernamE = String(user?.user?.username) || 'Guest'
+
+        toast.success(`${greetiing?.phrase}  ${usernamE}  Welcome`)
       }
     }
   })
