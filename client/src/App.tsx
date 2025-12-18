@@ -12,8 +12,13 @@ import Groups from './pages/groups';
 import Group from './pages/group';
 import Anime from './pages/anime';
 import Me from './pages/me';
+import { useEffect, type FC } from 'react';
+import useAuthStore from './store/auth.store';
 
-function App() {
+const App: FC = () => {
+  const verifySession = useAuthStore(s => s.verifySession)
+
+  useEffect(() => { verifySession() }, [verifySession])
 
   const routes = [
     { path: '/register', element: <Auth mode='register' /> },

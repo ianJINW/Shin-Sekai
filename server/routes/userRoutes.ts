@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  authCheck,
   deleteUser,
   getUser,
   getUsers,
@@ -17,6 +18,8 @@ userRouter
   .get(getUser)
   .put(uploads.single("profile"), updateUser)
   .delete(deleteUser);
+
+userRouter.get('/auth', authCheck)
 userRouter.route("/login").post(login);
 
 export default userRouter;

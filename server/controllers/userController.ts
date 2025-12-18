@@ -65,6 +65,24 @@ export const register = async (req: Request, res: Response) => {
 	}
 };
 
+export const authCheck = async (req: Request, res: Response) => {
+	try {
+		const token = req.cookies['token']
+		console.log('tokened')
+
+		if (!token) return res.status(401).json({ error: "No token" });
+
+		const decoded = jwt.verify(token, secretKey)
+
+		console.log('Not bad');
+
+		return res.json({ decoded })
+	} catch (error) {
+		console.log(`Auth check failed. ${error}`);
+		return res.status(401).json({ error: "Invalid token" });
+	}
+}
+
 export const login = async (req: Request, res: Response) => {
 	console.log("Request body:", req.body);
 

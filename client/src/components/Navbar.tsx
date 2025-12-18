@@ -5,6 +5,7 @@ import {
   MenuIcon,
   Sun,
   LogOutIcon,
+  UserIcon,
 } from "lucide-react";
 
 import useUIStore from "../store/ui.store";
@@ -96,7 +97,7 @@ const Navbar: FC = () => {
           )}
 
           {/* Avatar */}
-          {isAuth && (
+          {isAuth ? (
             <img onClick={() => {
               navigate('/profile')
             }}
@@ -104,7 +105,8 @@ const Navbar: FC = () => {
               alt="User avatar"
               className="h-10 w-10 rounded-full border border-gray-300 dark:border-gray-700"
             />
-          )}
+          ) : <UserIcon />}
+
         </div>
       </div>
     </header>

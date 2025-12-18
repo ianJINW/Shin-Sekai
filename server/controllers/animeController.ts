@@ -10,7 +10,6 @@ const baseUrl = envConfig.jikan_api;
 export const getAnimes = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/anime`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -26,7 +25,6 @@ export const getAnimes = async (req: Request, res: Response) => {
 export const getPopularAnimes = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/top/anime?filter=bypopularity`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -42,7 +40,6 @@ export const getPopularAnimes = async (req: Request, res: Response) => {
 export const getTopAnimes = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/top/anime`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -58,7 +55,6 @@ export const getTopAnimes = async (req: Request, res: Response) => {
 export const getUpcomingAnimes = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/top/anime?filter=upcoming`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -75,7 +71,6 @@ export const getAnimeById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const response = await axios.get(`${baseUrl}/anime/${id}`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -90,7 +85,6 @@ export const getAnimeById = async (req: Request, res: Response) => {
 export const getAiringAnime = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/top/anime?filter=airing`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -105,7 +99,6 @@ export const getAiringAnime = async (req: Request, res: Response) => {
 export const getMovies = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/top/anime?type=movie`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -120,7 +113,6 @@ export const getMovies = async (req: Request, res: Response) => {
 export const getTv = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/top/anime?type=tv`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -135,7 +127,6 @@ export const getTv = async (req: Request, res: Response) => {
 export const getGenres = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${baseUrl}/genre/anime`);
-    console.log("Data ", response);
 
     res.status(200).json(response.data);
   } catch (error) {

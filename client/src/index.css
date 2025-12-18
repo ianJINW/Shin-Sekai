@@ -9,8 +9,8 @@
 	color: rgba(255, 255, 255, 0.87);
 	background-color: #242424;
 
-	--color-bg-primary: rgb(32, 31, 49);
-	--color-bg-secondary: #ffbade;
+	--bg-primary: rgb(32, 31, 49);
+	--bg-secondary: #ffbade;
 	--color-primary: rgb(1, 176, 182);
 	--color-text: whitesmoke;
 	--anime-bg: #f1f1f1;

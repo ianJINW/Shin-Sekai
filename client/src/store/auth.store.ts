@@ -1,79 +1,80 @@
-import { toast } from "sonner"
-import { create } from "zustand"
-import { createJSONStorage, persist } from "zustand/middleware"
-import { getTimedGreetings } from "../components/exports"
+import { toast } from "sonner";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { getTimedGreetings } from "../components/exports";
+import api from "../lib/api";
 
 export interface User {
-  id: string
-  username: string
-  email: string
-  role: string
-  image: string
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  image: string;
 }
 
 export interface Loginres {
-  user: User
-  token: string
+  user: User;
+  token: string;
 }
 
 export interface UserStore {
-  user: User | null,
-  isAuth: boolean,
-  isAdmin: boolean,
-  login: (res: Loginres) => void
-  logout: () => void
-}
-
-export interface LoginReq {
-  email: string
-  password: string
+  user: User | null;
+  isAuth: boolean;
+  isAdmin: boolean;
+  login: (res: Loginres) => void;
+  logout: () => void;
+  verifySession: () => Promise<void>;
 }
 
 const useAuthStore = create<UserStore>()(
   persist(
-    set => ({
+    (set, get) => ({
       user: null,
       isAuth: false,
       isAdmin: false,
 
       login: (res: Loginres) => {
-        const { user } = res
-        if (!user) { console.error('No user data'); return }
-
-        if (!user.id || !user.email || !user.role) {
-          console.error("Missing required user fields:", {
-            id: !!user.id,
-            email: !!user.email,
-            role: !!user.role,
-            username: !!user.username,
-            image: !!user.image
-          });
-          return;
-        }
-
+        const { user } = res;
         set({
-          user: user,
-          isAuth: true
-        })
+          user,
+          isAuth: true,
+          isAdmin: user.role === "admin",
+        });
+        toast.success(`Logged in as ${user.username}`);
       },
+
       logout: () => {
-        set({ user: null, isAuth: false })
+        set({ user: null, isAuth: false, isAdmin: false });
+        toast(`Logged out`);
       },
-    }), {
-    name: 'auth-storage',
-    storage: createJSONStorage(() => localStorage),
 
-    partialize: (state) => ({ user: state.user, isAuth: state.isAuth, isAdmin: state.isAdmin }),
-    onRehydrateStorage: () => {
-      return (user) => {
-
-        const greetiing = getTimedGreetings()
-        const usernamE = String(user?.user?.username) || 'Guest'
-
-        toast.success(`${greetiing?.phrase}  ${usernamE}  Welcome`)
-      }
+      verifySession: async () => {
+        try {
+          const res = await api.get('/api/v1/user', {
+            withCredentials: true,
+          });
+          get().login(res.data);
+          const greeting = getTimedGreetings();
+          toast.success(`${greeting?.phrase} ${res.data.user.username} Welcome!`);
+        } catch (err) {
+          toast.error(`Error verifyinng. ${err}`)
+          get().logout();
+        }
+      },
+    }),
+    {
+      name: "auth-storage",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        user: state.user,
+        isAuth: state.isAuth,
+        isAdmin: state.isAdmin,
+      }),
+      onRehydrateStorage: () => () => {
+        // *don’t perform async here*
+      },
     }
-  })
-)
+  )
+);
 
-export default useAuthStore
+export default useAuthStore;

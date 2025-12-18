@@ -118,7 +118,7 @@ export default function Landing() {
             community.
           </p>
           <Button variant="secondary"
-            className="bg-anime-primary hover:bg-anime-primary/90" onClick={() => { alert('yawa') }}
+            className="bg-anime-primary hover:bg-anime-primary/90" onClick={() => { navigate('/groups') }}
           >
             Get Started Now
           </Button>
