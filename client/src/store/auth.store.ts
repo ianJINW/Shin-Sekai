@@ -6,6 +6,7 @@ export interface User {
   username: string
   email: string
   role: string
+  image: string
 }
 
 export interface Loginres {
@@ -41,7 +42,9 @@ const useAuthStore = create<UserStore>()(
           console.error("Missing required user fields:", {
             id: !!user.id,
             email: !!user.email,
-            role: !!user.role
+            role: !!user.role,
+            username: !!user.username,
+            image: !!user.image
           });
           return;
         }

@@ -1,20 +1,28 @@
 import type { FC } from "react";
-import { NavLink } from "react-router-dom";
-import useUIStore from "../store/ui.store";
-import logo from "../assets/react.svg";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   MoonIcon,
   MenuIcon,
   Sun,
+  LogOutIcon,
 } from "lucide-react";
+
+import useUIStore from "../store/ui.store";
+import logo from "../assets/react.svg";
 import Button from "./ui/button";
 import navLinks from "./exports";
+import useAuthStore from "../store/auth.store";
 
 const Navbar: FC = () => {
   const isDark = useUIStore((s) => s.isDark);
   const toggleDark = useUIStore((s) => s.darkToggle);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const sidebarOpen = useUIStore((s) => s.sidebar);
+  const user = useAuthStore((s) => s.user);
+  const isAuth = useAuthStore((s) => s.isAuth);
+  const logout = useAuthStore((s) => s.logout);
+
+  const navigate = useNavigate()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 lg:px-8 py-3 transition-all duration-300">
@@ -63,12 +71,37 @@ const Navbar: FC = () => {
             {isDark ? <Sun className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
           </Button>
 
+          {/* Auth Buttons */}
+          {isAuth ? (
+            <Button
+              onClick={logout}
+              variant="secondary"
+              className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label="Logout"
+            >
+              <LogOutIcon className="h-5 w-5" />
+            </Button>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <NavLink to="/login" className="px-3 py-1 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                Sign In
+              </NavLink>
+              <NavLink to="/register" className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                Sign Up
+              </NavLink>
+            </div>
+          )}
+
           {/* Avatar */}
-          <img
-            src={logo}
-            alt="User avatar"
-            className="h-6 w-6 rounded-full border border-gray-300 dark:border-gray-700"
-          />
+          {isAuth && (
+            <img onClick={() => {
+              navigate('/profile')
+            }}
+              src={user?.image}
+              alt="User avatar"
+              className="h-10 w-10 rounded-full border border-gray-300 dark:border-gray-700"
+            />
+          )}
         </div>
       </div>
     </header>

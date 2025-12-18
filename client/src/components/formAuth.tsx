@@ -1,22 +1,25 @@
-import { useState, type ChangeEvent, type FC, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FC, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { AuthProps } from "../pages/auth";
 import { LoginUser, usePostInfo } from "../lib/apiRequests";
 import { NavLink } from 'react-router-dom';
 import { Eye, EyeClosed } from "lucide-react";
 import Button from "./ui/button";
+import { toast } from "sonner";
 
 
 interface Form_Data {
   username: string,
   email: string,
-  password: string
+  password: string,
+  profile?: File
 }
 
 const FormAuth: FC<AuthProps> = ({ mode }) => {
   const navigate = useNavigate();
-  const { mutate: registerMutate, isPending } = usePostInfo('/api/v1/user')
-  const { mutate: loginMutate, isPending: loginending } = LoginUser('/api/v1/user/login')
+  const { mutateAsync: registerMutate, isSuccess, isPending, error: registerErr } = usePostInfo('/api/v1/user')
+  const { mutateAsync: loginMutate, isSuccess: loginSuccess, isPending: loginending, error: loginError } = LoginUser('/api/v1/user/login')
+
 
   const [form_Data, setFormData] = useState<Form_Data>({
     username: '',
@@ -33,21 +36,61 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-    const formData = {
-      email: form_Data.email,
-      username: form_Data.username,
-      password: form_Data.password
-    }
 
     if (mode === 'login') {
-      loginMutate({ email: formData.email, password: formData.password });
-      navigate('/');
-    } else {
-      registerMutate(formData);
-      navigate('/login');
-    }
+      toast.promise(
+        loginMutate({ email: form_Data.email, password: form_Data.password }),
+        {
+          loading: "Logging...",
+          success: "Logged successfully!",
+          error: `Login failed. ${loginError}`,
+        }
+      );
 
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+      });
+    } else {
+      const data = new FormData();
+      data.append('email', form_Data.email);
+      data.append('username', form_Data.username);
+      data.append('password', form_Data.password);
+      if (form_Data.profile) {
+        data.append('profile', form_Data.profile);
+      }
+
+      toast.promise(
+        registerMutate(data),
+        {
+          loading: "Registering...",
+          success: "Registered successfully!",
+          error: `Registration failed. ${registerErr}`,
+        }
+      );
+
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+      });
+    }
   }
+
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigate("/login");
+    }
+  }, [isSuccess, navigate]);
+
+  useEffect(() => {
+    if (loginSuccess) {
+      navigate("/");
+    }
+  }, [loginSuccess, navigate]);
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-bg-primary text-text">
       <fieldset className="w-full max-w-md p-6 bg-bg-primary border border-gray-300 rounded-lg shadow">
@@ -81,6 +124,7 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
               Email
             </label>
             <input
+              disabled={mode === 'login' ? loginending : isPending}
               required
               type="email"
               name="email"
@@ -98,6 +142,7 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
 
             <div className="relative">
               <input
+                disabled={mode === 'login' ? loginending : isPending}
                 required
                 type={showing ? "text" : "password"}
                 name="password"
@@ -121,10 +166,28 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
             </div>
           </div>
 
+          {mode === 'register' && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium" htmlFor="profile">
+                Profile Image (optional)
+              </label>
+              <input
+                type="file"
+                name="profile"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  setFormData(prev => ({ ...prev, profile: file }));
+                }}
+                className="border border-gray-400 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          )}
+
 
           <input
+            disabled={mode === 'login' ? loginending : isPending}
             type="submit"
-            disabled={isPending || loginending}
             value={mode === 'login' ? 'Log In' : 'Register'}
             className="mt-4 bg-p border border-gray-400 rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-primary primary text-white px-4 py-2 rounded hover:bg-primary/90 transition cursor-pointer"
           />
@@ -136,6 +199,7 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
             username: '',
             email: '',
             password: '',
+            profile: undefined
           })}
         >
           {mode === 'register' ? 'Log In' : 'Register'}

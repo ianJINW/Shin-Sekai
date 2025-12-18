@@ -1,5 +1,7 @@
 import './App.css'
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner'
+
 import Navbar from './components/Navbar';
 import PageTransition from './components/PageTransition';
 import Landing from './pages/Home';
@@ -9,6 +11,7 @@ import Animes from './pages/animes';
 import Groups from './pages/groups';
 import Group from './pages/group';
 import Anime from './pages/anime';
+import Me from './pages/me';
 
 function App() {
 
@@ -19,6 +22,7 @@ function App() {
     { path: '/anime/:id', element: <Anime /> },
     { path: '/groups', element: <Groups /> },
     { path: '/groups/:id', element: <Group /> },
+    { path: '/profile', element: <Me /> },
   ]
   return (
     <>
@@ -40,6 +44,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      <Toaster position='top-right' />
     </>
   )
 }

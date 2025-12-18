@@ -14,27 +14,35 @@ export const register = async (req: Request, res: Response) => {
 	let image = "";
 	const { email, username, password } = req.body;
 
-	if (req.file) {
-		const file = req.file;
-		image = await new Promise<string>((resolve, reject) => {
-			cloudinary.uploader
-				.upload_stream({ upload_preset: "art-gallery" }, (error, result) => {
-					if (result) resolve(result.url);
-					else reject(error);
-				})
-				.end(file.buffer);
-		}).catch((error) => {
-			res.status(500).json({ message: "Image upload failed", error });
-			return "";
-		});
-	}
+
 	if (!email || !username || !password) {
 		res.status(400).json({ message: "Please enter all fields" });
 		return;
 	}
 
 	try {
+		if (req.file) {
+			const file = req.file;
+			image = await new Promise<string>((resolve, reject) => {
+				cloudinary.uploader
+					.upload_stream({ upload_preset: "art-gallery" }, (error, result) => {
+						if (result) resolve(result.url);
+						else reject(error);
+					})
+					.end(file.buffer);
+			}).catch((error) => {
+				res.status(500).json({ message: "Image upload failed", error });
+				return "";
+			});
+		}
+	} catch (err) {
+		res.status(500).json({ message: `Image upload falied ${err}` })
+		return
+	}
+
+	try {
 		const existingUser = await User.findOne({ email });
+
 		if (existingUser) {
 			res.status(400).json({ message: "User already exists" });
 			return;
@@ -74,7 +82,14 @@ export const login = async (req: Request, res: Response) => {
 		}
 
 		const isMatch = await bcrypt.compare(password, user.password);
+
+		console.log('Not a match');
+
 		if (!isMatch) {
+			console.log(
+				'Bad credentialss'
+			);
+
 			res.status(400).json({ message: "Invalid credentials" });
 			return;
 		}
@@ -83,6 +98,7 @@ export const login = async (req: Request, res: Response) => {
 			id: user.id,
 			email: user.email,
 			username: user.username,
+			image: user.image,
 			isAdmin: user.isAdmin,
 		};
 		const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
@@ -94,7 +110,7 @@ export const login = async (req: Request, res: Response) => {
 			maxAge: 24 * 60 * 60 * 1000,
 		});
 
-		res.json({ message: "Login successful", user: { id: user.id, role: user.role, username: user.username } });
+		res.json({ message: "Login successful", user: { id: user.id, role: user.role, email: user.email, username: user.username, image: user.image } });
 		return;
 	} catch (error) {
 		res.status(500).json({ message: `An error occurred, ${error}` });

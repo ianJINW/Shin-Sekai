@@ -3,6 +3,7 @@ import useAuthStore, { type LoginReq, type Loginres } from "../store/auth.store"
 import api from "./api";
 
 const usePostInfo = (url: string) => {
+
   return useMutation<any, any, any>({
     mutationFn: (data: any) => {
       return api.post(url, data)

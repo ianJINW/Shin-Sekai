@@ -7,7 +7,7 @@ const Group: FC = () => {
 
   const { id } = useParams<{ id: string }>(); // Ensure param key matches your route
   const { data, isPending, isError, error } = useGetInfo(`/api/v1/groups/${id}`);
-  const { mutate, isPending: sending, isError: sendingError, error: sendError } =
+  const { isError: sendingError, error: sendError } =
     usePostInfo(`/api/v1/groups/${id}`);
 
   const [messages, setMessages] = useState<string[]>([])
