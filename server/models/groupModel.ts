@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const groupSchema = new mongoose.Schema({
   name: {
@@ -19,7 +19,7 @@ const groupSchema = new mongoose.Schema({
   },
   members: [
     {
-      user: {
+      user: { 
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
@@ -35,7 +35,14 @@ const groupSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+const messageSchema = new Schema({
+  group: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
+  sender: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  text: { type: String, required: true }
+}, { timestamps: true });
 
 const groupModel = mongoose.model("Group", groupSchema);
+const Message = mongoose.model("Message", messageSchema);
 
 export default groupModel;
+export { Message }

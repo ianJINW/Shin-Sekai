@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Group from "../models/groupModel";
+import { Message } from "../models/groupModel";
 import { cloudinary } from "../middleware/multer";
+import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
 
 export const getGroups = async (req: Request, res: Response) => {
   try {
@@ -36,7 +38,14 @@ export const getGroup = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Group not found" });
       return;
     }
-    res.json({ group, message: "すごいすごい" });
+
+    // include recent messages when fetching a group
+    const messages = await Message.find({ group: groupId })
+      .populate('sender', 'username image')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    res.json({ group, messages, message: "すごいすごい" });
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
   }
@@ -106,7 +115,7 @@ export const createGroup = async (req: Request, res: Response) => {
       image = await new Promise<string>((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { upload_preset: "art-gallery" },
-          (error: any, result: any) => {
+          (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
             if (result && (result.secure_url || result.url)) {
               resolve(result.secure_url ?? result.url);
             } else {

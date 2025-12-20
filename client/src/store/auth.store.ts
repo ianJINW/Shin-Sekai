@@ -5,7 +5,8 @@ import { getTimedGreetings } from "../components/exports";
 import api from "../lib/api";
 
 export interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   username: string;
   email: string;
   role: string;

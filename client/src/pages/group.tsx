@@ -1,53 +1,95 @@
-import { type FC, useState, useEffect, useCallback, type FormEvent } from "react";
+import { type FC, useState, type FormEventHandler, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGetInfo, usePostInfo } from "../lib/apiRequests";
-import { socket } from "../hooks/useSocket";
+import useSocket, { socket } from "../hooks/useSocket";
 import PageSkeleton from "../components/ui/PageSkeleton";
 import { toast } from 'sonner';
+import useAuthStore from "../store/auth.store";
 
 export interface Member {
+  id: number
   user: string;
-  role: string;
-  id: number;
-  joinedAt: Date;
+  role: "owner" | "admin" | "member";
+  joinedAt: string;
+  _id: string;
+}
+
+interface Message {
+  _id?: string;
+  text: string;
+  timestamp: string;
+  sender?: { _id: string; username?: string; image?: string };
 }
 
 const Group: FC = () => {
   const { id } = useParams<{ id: string }>();
+  const user = useAuthStore(s => s.user)
 
   const { data, isPending, isError, error } = useGetInfo(`/api/v1/groups/${id}`);
   const { isError: sendingError, error: sendError } = usePostInfo(`/api/v1/groups/${id}`);
 
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
-  const handleMsg = useCallback((msg: string) => {
-    setMessages((prev) => [...prev, msg]);
-  }, []);
+  const group = data?.group;
 
   useEffect(() => {
-    socket.on("message", handleMsg);
+    if (!group?._id) return;
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket connect error:", err.message);
-    });
-    return () => {
-      socket.off("message", handleMsg);
+    const join = () => {
+      socket.emit("joinGroup", group._id);
+      console.log(`[client] joining group room ${group._id}`);
     };
-  }, [handleMsg]);
 
-  const sendMsg = (e: FormEvent<HTMLButtonElement>) => {
+    if (socket.connected) {
+      join();
+    } else {
+      socket.once("connect", join);
+    }
+
+    return () => {
+      socket.off("connect", join);
+    };
+  }, [group?._id]);
+
+  // populate messages when group data loads
+  useEffect(() => {
+    if (!data?.messages) return;
+
+    const mapped = (data.messages as any[]).map((m) => ({
+      _id: m._id,
+      text: m.text,
+      timestamp: m.createdAt ? new Date(m.createdAt).toISOString() : (m.timestamp ?? new Date().toISOString()),
+      sender: m.sender ? { _id: m.sender._id ?? m.sender._id, username: m.sender.username, image: m.sender.image } : undefined
+    }));
+
+    setMessages(mapped);
+  }, [data?.messages]);
+
+
+  useSocket("groupMessage", (data: unknown) => {
+    if (typeof data !== "object" || data === null) return;
+
+    const msg = data as { _id?: string; text: string; sender?: { _id: string; username?: string; image?: string }; timestamp: string }
+
+    setMessages(prev => [...prev, { _id: msg._id, text: msg.text, timestamp: msg.timestamp, sender: msg.sender }])
+  });
+
+  const sendMsg: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
+
+    console.log('user', user?.id, user?._id)
+    console.log('user', user)
+
     const trimmed = input.trim();
     if (!trimmed) return;
-
-    socket.emit("message", trimmed);
+    socket.emit("groupMessage", { groupId: id, text: trimmed, sender: user?._id });
     setInput("");
   };
 
   if (isPending) {
     return (
-      <PageSkeleton title="Groups loadding" count={8} />
+      <PageSkeleton title="Groups loadding" count={8} /> 
     );
   }
 
@@ -58,11 +100,6 @@ const Group: FC = () => {
       </div>
     );
   }
-
-
-
-
-  const group = data?.group;
 
 
   return (
@@ -89,41 +126,48 @@ const Group: FC = () => {
         ) : messages.length === 0 ? (
           <p className="text-center text-gray-400">No messages yet</p>
         ) : (
-          messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`max-w-xs px-3 py-2 rounded-2xl shadow-sm text-sm break-words ${i % 2 === 0
-                ? "ml-auto bg-indigo-500 text-white"
-                : "mr-auto bg-gray-200 text-gray-900"
-                }`}
-            >
-              {msg}
-              <div className="text-[10px] text-gray-300 text-right mt-1">
-                {new Date().toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            </div>
-          ))
+              messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`max-w-xs px-3 py-2 rounded-2xl shadow-sm text-sm break-words ${i % 2 === 0
+                    ? "ml-auto bg-indigo-500 text-white"
+                    : "mr-auto bg-gray-200 text-gray-900"
+                    }`}
+                >
+                  {/* Sender header */}
+                  {msg.sender && (
+                    <div className="flex items-center gap-2 mb-1">
+                      {msg.sender.image ? (
+                        <img src={msg.sender.image} alt={msg.sender.username} className="w-5 h-5 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-gray-300 text-[10px] flex items-center justify-center text-gray-700">
+                          {msg.sender.username ? msg.sender.username[0]?.toUpperCase() : "?"}
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-700 font-medium">
+                        {msg.sender.username ?? "Unknown"}
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.text}
+
+                  <div className="text-[10px] text-gray-300 text-right mt-1">
+                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                </div>
+              ))
+
         )}
       </main>
 
       {/* ✉️ Input Bar */}
-      <form className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3 items-center">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message…"
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        />
-        <button
-          onClick={sendMsg}
-          className="bg-indigo-600 text-white px-5 py-2 rounded-full hover:bg-indigo-700 transition"
-        >
-          Send
-        </button>
+      <form onSubmit={sendMsg}>
+        <input value={input} onChange={(e) => setInput(e.target.value)} />
+        <button type="submit">Send</button>
       </form>
 
       {/* ⚠️ Error */}

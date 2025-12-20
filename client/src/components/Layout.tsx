@@ -5,9 +5,9 @@ import PageTransition from "./PageTransition";
 
 const Layout: FC = () => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen m-0 p-0 ">
       <Sidebar />
-      <div className="flex-1 flex flex-col w-full m-0 flex-grow">
+      <div className="flex-1 flex flex-col w-full m-0 flex-grow dark:--color-text">
         <PageTransition>
           <Outlet />
         </PageTransition>

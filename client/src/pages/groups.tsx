@@ -63,7 +63,7 @@ const Groups: FC = () => {
               >
                 <img
                   className="w-full h-40 object-cover"
-                  src={group.image}
+                  src={group.image || '/360_F_1591643371_wRpP6nKXtgWJWPNKokRvjwwaXEfZz5qX.webp'}
                   alt={group.name}
                 />
 

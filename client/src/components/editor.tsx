@@ -13,6 +13,30 @@ type GroupResponse = {
   members: Member[]
 }
 
+export interface GroupMember {
+  user: string;
+  role: "owner" | "admin" | "member";
+  joinedAt?: string;
+  _id?: string;
+}
+
+export interface Group {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  members: GroupMember[];
+  postsCount: number;
+  createdAt: string;
+}
+
+export interface ApiResponse<T> {
+  message: string;
+  group?: T;
+  groups?: T[];
+}
+
+
 const Editor: FC = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -39,7 +63,7 @@ const Editor: FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!user?.id) {
+    if (!user?._id) {
       toast.error("You must be logged in to create a group");
       return;
     }
@@ -47,26 +71,24 @@ const Editor: FC = () => {
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description);
-    formData.append("user", user.id ?? "");
+    formData.append("user", user._id ?? "");
 
     if (imageFile) formData.append("image", imageFile);
 
-    console.log('formData', formData);
-
     try {
       toast.loading("Creating group...");
-      const result = await mutateAsync(formData as unknown as any);
+      const result = await mutateAsync(formData as unknown as ApiResponse<Group>);
       toast.dismiss();
       toast.success("Group created!");
 
       // server returns { group, message }
-      const group: GroupResponse | undefined = (result as any)?.group ?? (result as unknown as GroupResponse);
+      const group: GroupResponse = result?.group ?? (result as unknown as GroupResponse);
       const groupId = group?._id;
 
       if (groupId) {
         navigate(`/groups/${groupId}`);
       } else {
-        console.error("Group ID not found in response");
+        toast.error("Group ID not found in response");
       }
     } catch (err) {
       toast.dismiss();
