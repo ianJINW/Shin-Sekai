@@ -36,7 +36,6 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-
     if (mode === 'login') {
       toast.promise(
         loginMutate({ email: form_Data.email, password: form_Data.password }),

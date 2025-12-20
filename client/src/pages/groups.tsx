@@ -5,6 +5,7 @@ import type { Member } from "./group"
 import { animePhrases } from "../components/exports"
 import { PlusIcon, XIcon } from "lucide-react"
 import Editor from "../components/editor"
+import PageSkeleton from "../components/ui/PageSkeleton"
 
 interface GroupItem {
   _id: number
@@ -29,9 +30,7 @@ const Groups: FC = () => {
 
   if (isPending) {
     return (
-      <main>
-        <p>Loading groups...</p>
-      </main>
+      <PageSkeleton title="Groups loadding" count={8} />
     )
   }
 

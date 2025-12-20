@@ -72,7 +72,9 @@ export const updateGroup = async (req: Request, res: Response) => {
     group.name = name;
     group.description = description;
     group.image = image;
+
     await group.save();
+
     res.json({ group, message: "すごいすごい" });
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
@@ -97,33 +99,51 @@ export const createGroup = async (req: Request, res: Response) => {
   let image = "";
   if (req.file) {
     const file = req.file;
-    image = await new Promise<string>((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream({ upload_preset: "art-gallery" }, (error, result) => {
-          if (result) resolve(result.url);
-          else reject(error);
-        })
-        .end(file.buffer);
-    }).catch((error) => {
+
+    console.log("image", req.file);
+
+    try {
+      image = await new Promise<string>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { upload_preset: "art-gallery" },
+          (error: any, result: any) => {
+            if (result && (result.secure_url || result.url)) {
+              resolve(result.secure_url ?? result.url);
+            } else {
+              reject(error ?? new Error("No upload result"));
+            }
+          }
+        );
+        stream.end(file.buffer);
+      });
+    } catch (error) {
+      console.error("Image upload failed", error);
       res.status(500).json({ message: "Image upload failed", error });
-      return "";
-    });
+      return;
+    }
   }
 
-  const { name, description, user } = req.body;
-  if (!user) {
-    res.status(400).json({ message: "ばかばか" });
+  const { name, description } = req.body;
+  // Multer parses fields as strings; sanitize the user field
+  let user = typeof req.body.user === "string" ? req.body.user.trim() : String(req.body.user ?? "").trim();
+
+  console.log("req", req.body);
+
+  if (!user || user === "undefined") {
+    res.status(400).json({ message: "User is required" });
     return;
   }
+
   try {
     const group = new Group({
       name,
       description,
       image,
-      members: [{ user, role: "owner, admin" }],
+      members: [{ user, role: "owner" }],
     });
 
     await group.save();
+    console.log(group);
 
     res.json({ group, message: "すごいすごい" });
   } catch (error) {

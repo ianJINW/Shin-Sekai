@@ -1,6 +1,7 @@
 import { type FC } from "react";
 import { useGetInfo } from "../lib/apiRequests";
 import { useNavigate } from "react-router-dom";
+import PageSkeleton from "../components/ui/PageSkeleton";
 
 export interface Pagination {
   last_visible_page: number;
@@ -45,11 +46,7 @@ const Animes: FC = () => {
 
   if (isLoading) {
     return (
-      <main className="flex justify-center items-center min-h-screen">
-        <p className="text-lg font-medium text-gray-600 animate-pulse">
-          Loading…
-        </p>
-      </main>
+      <PageSkeleton title="Groups loadding" count={8} />
     );
   }
 

@@ -17,8 +17,14 @@ import useAuthStore from './store/auth.store';
 
 const App: FC = () => {
   const verifySession = useAuthStore(s => s.verifySession)
+  const isAuth = useAuthStore(s => s.isAuth)
 
-  useEffect(() => { verifySession() }, [verifySession])
+  useEffect(() => {
+    // Only verify session if not already authenticated (after rehydration)
+    if (!isAuth) {
+      verifySession()
+    }
+  }, [verifySession, isAuth])
 
   const routes = [
     { path: '/register', element: <Auth mode='register' /> },

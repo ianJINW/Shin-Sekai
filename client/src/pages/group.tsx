@@ -2,7 +2,8 @@ import { type FC, useState, useEffect, useCallback, type FormEvent } from "react
 import { useParams } from "react-router-dom";
 import { useGetInfo, usePostInfo } from "../lib/apiRequests";
 import { socket } from "../hooks/useSocket";
-import Editor from "../components/editor";
+import PageSkeleton from "../components/ui/PageSkeleton";
+import { toast } from 'sonner';
 
 export interface Member {
   user: string;
@@ -19,7 +20,6 @@ const Group: FC = () => {
 
   const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
-  const [editing, setEditing] = useState(false)
 
   const handleMsg = useCallback((msg: string) => {
     setMessages((prev) => [...prev, msg]);
@@ -27,6 +27,10 @@ const Group: FC = () => {
 
   useEffect(() => {
     socket.on("message", handleMsg);
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connect error:", err.message);
+    });
     return () => {
       socket.off("message", handleMsg);
     };
@@ -43,9 +47,7 @@ const Group: FC = () => {
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-gray-500">
-        Loading group info…
-      </div>
+      <PageSkeleton title="Groups loadding" count={8} />
     );
   }
 
@@ -57,111 +59,79 @@ const Group: FC = () => {
     );
   }
 
+
+
+
   const group = data?.group;
 
+
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
-      {!group ? (
-        <p className="text-center text-lg text-gray-600">No group found</p>
-      ) : (
-        <>
-            {/* Group Header */}
-            <header className="text-center">
-              <h1 className="text-2xl font-bold text-gray-800">{group.name}</h1>
-              <p className="text-sm text-gray-500">{group.description}</p>
-            </header>
+    <div className="flex flex-col h-screen bg-gray-50 w-full">
+      {/* 📌 Group Header */}
+      <header className="bg-white shadow-md px-6 py-4 flex items-center gap-4">
+        {group?.image && (
+          <img
+            src={group.image}
+            alt={`Group ${group.name}`}
+            className="w-12 h-12 rounded-full object-cover border-2 border-indigo-300"
+          />
+        )}
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">{group?.name}</h1>
+          <p className="text-sm text-gray-500">{group?.description}</p>
+        </div>
+      </header>
 
-            {/* Group Image */}
-          {group.image && (
-              <div className="flex justify-center">
-                <img popoverTarget="editor"
-                  src={group.image}
-                  alt={`Group ${group.name}`}
-                  className="w-40 h-40 rounded-full object-cover border-2 border-indigo-300"
-                />
+      {/* 🗨️ Messages */}
+      <main className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {!group ? (
+          <p className="text-center text-lg text-gray-600">No group found</p>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-gray-400">No messages yet</p>
+        ) : (
+          messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`max-w-xs px-3 py-2 rounded-2xl shadow-sm text-sm break-words ${i % 2 === 0
+                ? "ml-auto bg-indigo-500 text-white"
+                : "mr-auto bg-gray-200 text-gray-900"
+                }`}
+            >
+              {msg}
+              <div className="text-[10px] text-gray-300 text-right mt-1">
+                {new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </div>
-            )}
-
-            <Editor id='editor' />
-
-            {/* Messages Panel */}
-            <section className="bg-white shadow-lg rounded-lg p-4 flex flex-col gap-3 max-h-96 overflow-y-auto" popover id="editor" >
-              {messages.length === 0 ? (
-                <p className="text-center text-gray-400">No messages yet</p>
-              ) : (
-                messages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className="bg-indigo-100 text-indigo-900 px-4 py-2 rounded-lg shadow-sm max-w-xs break-words"
-                  >
-                    {msg}
-                  </div>
-                ))
-              )}
-            </section>
-
-            {/* Input Bar */}
-            <form className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type a message…"
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-              <button
-                onClick={sendMsg}
-                className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition"
-              >
-                Send
-              </button>
-            </form>
-
-            {/* Group Info */}
-            <div className="text-gray-700 text-sm">
-              <p>
-                <strong>Created:</strong>{" "}
-                {new Date(group.createdAt).toLocaleString()}
-              </p>
-              <p>
-                <strong>Posts:</strong> {group.postsCount}
-              </p>
             </div>
+          ))
+        )}
+      </main>
 
-            {/* Members List */}
-            <section>
-              <h2 className="text-lg font-semibold text-gray-800">Members</h2>
-              {group.members?.length > 0 ? (
-                <ul className="space-y-2">
-                {group.members.map((member: Member) => (
-                  <li
-                    key={member.id}
-                    className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-2"
-                  >
-                    <span className="text-gray-800 font-medium">
-                      {member.user}
-                    </span>
-                    <span className="text-xs text-gray-500 italic">
-                      {member.role}
-                    </span>
-                    <small className="text-gray-400">
-                      {new Date(member.joinedAt).toLocaleDateString()}
-                    </small>
-                  </li>
-                ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500">No members yet</p>
-              )}
-            </section>
+      {/* ✉️ Input Bar */}
+      <form className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3 items-center">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message…"
+          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+        <button
+          onClick={sendMsg}
+          className="bg-indigo-600 text-white px-5 py-2 rounded-full hover:bg-indigo-700 transition"
+        >
+          Send
+        </button>
+      </form>
 
-            {/* Error Sending */}
-            {sendingError && (
-              <p className="text-red-500 text-sm">
-                Error sending data: {(sendError as Error)?.message}
-              </p>
-            )}
-        </>
+      {/* ⚠️ Error */}
+      {sendingError && (
+        <p className="text-center text-red-500 text-sm py-2">
+          Error sending: {(sendError as Error)?.message}
+          {toast.error(`Error sending message ${(sendError as Error)?.message}`)}
+        </p>
       )}
     </div>
   );

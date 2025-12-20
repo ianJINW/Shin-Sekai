@@ -2,11 +2,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import useAuthStore, { type LoginReq, type Loginres } from "../store/auth.store";
 import api from "./api";
 
-const usePostInfo = (url: string) => {
+const usePostInfo = <T = unknown>(url: string) => {
 
-  return useMutation<any, any, any>({
-    mutationFn: (data: any) => {
-      return api.post(url, data)
+  return useMutation<T, Error, unknown>({
+    mutationFn: (data: unknown) => {
+      return api.post(url, data).
+        then(res => res.data)
     },
     onSuccess: () => {
       console.log('Posted')

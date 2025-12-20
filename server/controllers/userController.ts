@@ -68,24 +68,24 @@ export const register = async (req: Request, res: Response) => {
 export const authCheck = async (req: Request, res: Response) => {
 	try {
 		const token = req.cookies['token']
-		console.log('tokened')
 
 		if (!token) return res.status(401).json({ error: "No token" });
 
-		const decoded = jwt.verify(token, secretKey)
+		const decoded = jwt.verify(token, secretKey) as { id: string }
 
-		console.log('Not bad');
+		// Fetch the user from database
+		const user = await User.findById(decoded.id).select("-password");
+		if (!user) {
+			return res.status(401).json({ error: "User not found" });
+		}
 
-		return res.json({ decoded })
+		return res.json({ user, token })
 	} catch (error) {
-		console.log(`Auth check failed. ${error}`);
 		return res.status(401).json({ error: "Invalid token" });
 	}
 }
 
 export const login = async (req: Request, res: Response) => {
-	console.log("Request body:", req.body);
-
 	const { email, password } = req.body;
 	if (!email || !password) {
 		res.status(400).json({ message: "Please enter all fields" });
@@ -101,13 +101,7 @@ export const login = async (req: Request, res: Response) => {
 
 		const isMatch = await bcrypt.compare(password, user.password);
 
-		console.log('Not a match');
-
 		if (!isMatch) {
-			console.log(
-				'Bad credentialss'
-			);
-
 			res.status(400).json({ message: "Invalid credentials" });
 			return;
 		}

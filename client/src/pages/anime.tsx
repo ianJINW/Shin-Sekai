@@ -1,6 +1,7 @@
 import { type FC } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetInfo } from '../lib/apiRequests';
+import PageSkeleton from '../components/ui/PageSkeleton';
 
 interface MalEntity {
   mal_id: number;
@@ -9,59 +10,13 @@ interface MalEntity {
   url?: string | null;
 }
 
-interface AnimeData {
-  mal_id: number;
-  url: string;
-  images: {
-    jpg: {
-      image_url: string;
-      small_image_url: string;
-      large_image_url: string;
-    };
-    webp: {
-      image_url: string;
-      small_image_url: string;
-      large_image_url: string;
-    };
-  };
-  trailer: {
-    youtube_id: string | null;
-    url: string | null;
-    embed_url: string | null;
-  };
-  title: string;
-  title_english: string | null;
-  title_japanese: string | null;
-  type: string;
-  source: string;
-  episodes: number;
-  status: string;
-  aired: { string: string };
-  duration: string;
-  rating: string;
-  score: number;
-  scored_by: number;
-  rank: number;
-  popularity: number;
-  members: number;
-  favorites: number;
-  synopsis: string;
-  producers: MalEntity[];
-  licensors: MalEntity[];
-  studios: MalEntity[];
-  genres: MalEntity[];
-  themes: MalEntity[];
-}
-
 const Anime: FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: anime, isLoading, error } = useGetInfo<{ data: AnimeData }>(`/api/v1/anime/${id}`);
+  const { data: anime, isLoading, error } = useGetInfo(`/api/v1/anime/${id}`);
 
   if (isLoading) {
     return (
-      <main className="flex items-center justify-center min-h-screen">
-        <p className="text-lg animate-pulse text-gray-700">Loading…</p>
-      </main>
+      <PageSkeleton title={'Anime loading'} count={1} />
     );
   }
 
@@ -120,7 +75,7 @@ const Anime: FC = () => {
           <div>
             <h3 className="text-lg font-semibold text-gray-800">Genres</h3>
             <ul className="mt-1 flex flex-wrap gap-2 justify-center align-center">
-              {data.genres.map((g) => (
+              {data.genres.map((g: MalEntity) => (
                 <li key={g.mal_id} className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">
                   {g.name}
                 </li>
@@ -134,7 +89,7 @@ const Anime: FC = () => {
           <div>
             <h3 className="text-lg font-semibold text-gray-800">Themes</h3>
             <ul className="mt-1 flex flex-wrap gap-2 justify-center align-center">
-              {data.themes.map((t) => (
+              {data.themes.map((t: MalEntity) => (
                 <li key={t.mal_id} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                   {t.name}
                 </li>
@@ -150,7 +105,7 @@ const Anime: FC = () => {
           <div>
             <h3 className="font-semibold text-gray-800">Producers</h3>
             <p className="text-gray-700">
-              {data.producers.map((p) => p.name).join(', ')}
+              {data.producers.map((p: MalEntity) => p.name).join(', ')}
             </p>
           </div>
         )}
@@ -158,7 +113,7 @@ const Anime: FC = () => {
           <div>
             <h3 className="font-semibold text-gray-800">Licensors</h3>
             <p className="text-gray-700">
-              {data.licensors.map((l) => l.name).join(', ')}
+              {data.licensors.map((l: MalEntity) => l.name).join(', ')}
             </p>
           </div>
         )}
@@ -166,7 +121,7 @@ const Anime: FC = () => {
           <div>
             <h3 className="font-semibold text-gray-800">Studios</h3>
             <p className="text-gray-700">
-              {data.studios.map((s) => s.name).join(', ')}
+              {data.studios.map((s: MalEntity) => s.name).join(', ')}
             </p>
           </div>
         )}

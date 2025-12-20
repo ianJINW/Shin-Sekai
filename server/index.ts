@@ -5,6 +5,7 @@ dotenv.config();
 import cors from "cors";
 import helmet from "helmet";
 import passport from "passport";
+import cookieParser from 'cookie-parser'
 
 import connectDB from "./config/db";
 import userRouter from "./routes/userRoutes";
@@ -30,6 +31,7 @@ app.use(
 	})
 );
 
+app.use(cookieParser())
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

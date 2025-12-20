@@ -3,10 +3,10 @@ import { io, Socket } from "socket.io-client";
 import envConfig from "../config/env.config";
 
 export const socket: Socket = io(envConfig.baseRL, {
-  autoConnect: false,
+  autoConnect: false, transports: ['websocket']
 });
 
-const useSocket = (event: string, handler: (data: any) => void) => {
+const useSocket = (event: string, handler: (data: unknown) => void) => {
   useEffect(() => {
     // Log when hook runs
     console.log(`[useSocket] subscribing to event: "${event}"`);

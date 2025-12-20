@@ -32,7 +32,7 @@ const Navbar: FC = () => {
         <img src={logo} alt="App logo" className="h-8 w-8" />
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-4">
+        <nav className="hidden lg:flex items-center space-x-4">
           {navLinks.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
@@ -54,7 +54,7 @@ const Navbar: FC = () => {
           <Button
             onClick={toggleSidebar}
             variant="secondary"
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 md:hidden"
+            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
             aria-label="Toggle menu"
           >
             <MenuIcon

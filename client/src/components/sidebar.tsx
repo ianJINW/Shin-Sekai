@@ -18,7 +18,7 @@ const Sidebar: FC = () => {
     <>
       {/* Mobile sidebar (overlay) */}
       {isClient && sidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="w-64 max-w-full h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center justify-between mb-4">
               <img src={logo} alt="App logo" className="h-8 w-8" />
