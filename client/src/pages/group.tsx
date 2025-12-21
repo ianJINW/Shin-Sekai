@@ -1,5 +1,5 @@
 import { type FC, useState, type FormEventHandler, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetInfo, usePostInfo } from "../lib/apiRequests";
 import useSocket, { socket } from "../hooks/useSocket";
 import PageSkeleton from "../components/ui/PageSkeleton";
@@ -23,6 +23,7 @@ interface Message {
 
 const Group: FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate()
   const user = useAuthStore(s => s.user)
 
   const { data, isPending, isError, error } = useGetInfo(`/api/v1/groups/${id}`);
@@ -78,9 +79,6 @@ const Group: FC = () => {
   const sendMsg: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
 
-    console.log('user', user?.id, user?._id)
-    console.log('user', user)
-
     const trimmed = input.trim();
     if (!trimmed) return;
     socket.emit("groupMessage", { groupId: id, text: trimmed, sender: user?._id });
@@ -101,19 +99,18 @@ const Group: FC = () => {
     );
   }
 
-
   return (
     <div className="flex flex-col h-screen bg-gray-50 w-full">
       {/* 📌 Group Header */}
       <header className="bg-white shadow-md px-6 py-4 flex items-center gap-4">
-        {group?.image && (
-          <img
-            src={group.image}
+        <img onClick={() => navigate(`/groups/info/${group._id}`)}
+          src={group.image || '360_F_1591643371_wRpP6nKXtgWJWPNKokRvjwwaXEfZz5qX.webp'}
             alt={`Group ${group.name}`}
             className="w-12 h-12 rounded-full object-cover border-2 border-indigo-300"
           />
-        )}
-        <div>
+
+        <div
+        >
           <h1 className="text-xl font-semibold text-gray-900">{group?.name}</h1>
           <p className="text-sm text-gray-500">{group?.description}</p>
         </div>

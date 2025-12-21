@@ -14,6 +14,7 @@ import Anime from './pages/anime';
 import Me from './pages/me';
 import { useEffect, type FC } from 'react';
 import useAuthStore from './store/auth.store';
+import GroupInfo from './components/info';
 
 const App: FC = () => {
   const verifySession = useAuthStore(s => s.verifySession)
@@ -34,6 +35,7 @@ const App: FC = () => {
     { path: '/anime/:id', element: <Anime /> },
     { path: '/groups', element: <Groups /> },
     { path: '/groups/:id', element: <Group /> },
+    { path: '/groups/info/:id', element: <GroupInfo /> },
     { path: '/profile', element: <Me /> },
   ]
   return (
@@ -54,6 +56,7 @@ const App: FC = () => {
                 </PageTransition>} ></Route>
             ))}
           </Route>
+          <Route path="*" element={<div>404: No route matched</div>} />
         </Routes>
       </Router>
       <Toaster position='top-right' />

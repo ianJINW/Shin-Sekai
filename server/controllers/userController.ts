@@ -79,8 +79,12 @@ export const authCheck = async (req: Request, res: Response) => {
 			return res.status(401).json({ error: "User not found" });
 		}
 
+		console.log('Working');
+
 		return res.json({ user, token })
 	} catch (error) {
+		console.log('Working not');
+
 		return res.status(401).json({ error: "Invalid token" });
 	}
 }

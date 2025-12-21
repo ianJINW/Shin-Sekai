@@ -7,6 +7,7 @@ import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
 export const getGroups = async (req: Request, res: Response) => {
   try {
     const groups = await Group.find();
+
     res.json({ groups, message: "すごいすごい" });
   } catch (error) {
     res.status(500).json({ message: "ばかばか" });
@@ -26,6 +27,8 @@ export const getGroupMembers = async (req: Request, res: Response) => {
     }
     res.json({ members, message: "すごいすごい" });
   } catch (error) {
+    console.log('erro');
+
     res.status(500).json({ message: "ばかばか" });
   }
 };
@@ -33,7 +36,9 @@ export const getGroupMembers = async (req: Request, res: Response) => {
 export const getGroup = async (req: Request, res: Response) => {
   const { groupId } = req.params;
   try {
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).populate('members.user', 'username image')
+    console.log(group);
+
     if (!group) {
       res.status(404).json({ message: "Group not found" });
       return;
@@ -93,7 +98,11 @@ export const updateGroup = async (req: Request, res: Response) => {
 export const getGroupMember = async (req: Request, res: Response) => {
   const { groupId, userId } = req.params;
   try {
-    const member = await Group.findById(groupId).populate(`members.${userId}`);
+    const group = await Group.findById(groupId).populate('members.user', 'username _id email');
+    if (!group) { /* 404 */ }
+
+    const member = group?.members.find(m => m.user && m.user._id?.toString() === userId);
+
     if (!member) {
       res.status(404).json({ message: "Member not found" });
       return;
@@ -179,7 +188,7 @@ export const joinGroup = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Group not found" });
       return;
     }
-    const isMember = group.members.find((member) => member.user === user);
+    const isMember = group.members.find((member) => member.user.toString() === user);
     if (isMember) {
       res.status(400).json({ message: "ばかばか" });
       return;
