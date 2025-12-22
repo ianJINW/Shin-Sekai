@@ -1,16 +1,23 @@
 import pino from "pino";
 import { pinoHttp } from "pino-http";
+import pretty from "pino-pretty";
 
-export const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'production' ? {
-    target: 'pino-pretty',
-    options: {
+const isDev = process.env.NODE_ENV !== "production";
+
+const stream = isDev
+  ? pretty({
       colorize: true,
-      translateTime: "SYS:standard"
-    }
-  }: undefined
-})
+    translateTime: "SYS:standard",
+  })
+  : undefined;
+
+export const logger = pino(
+  {
+    level: process.env.LOG_LEVEL || "info",
+  },
+  stream
+);
+
 
 export const httpLogger = pinoHttp({
   logger, 
