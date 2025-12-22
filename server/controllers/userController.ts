@@ -4,6 +4,7 @@ import User from "../models/userModel";
 import bcrypt from "bcryptjs";
 import { cloudinary } from "../middleware/multer";
 import { envConfig } from "../config/env.config";
+import { logger } from "../utils/logger";
 
 const secretKey = envConfig.jwtSecret;
 if (!secretKey) {
@@ -79,11 +80,11 @@ export const authCheck = async (req: Request, res: Response) => {
 			return res.status(401).json({ error: "User not found" });
 		}
 
-		console.log('Working');
+		logger.debug({ userId: user._id }, 'Auth check succeeded');
 
 		return res.json({ user, token })
 	} catch (error) {
-		console.log('Working not');
+		logger.warn({ err: error }, 'Auth check failed');
 
 		return res.status(401).json({ error: "Invalid token" });
 	}

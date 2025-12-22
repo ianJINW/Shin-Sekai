@@ -4,7 +4,8 @@ import { likeItem, unlikeItem, getLikes } from "../controllers/likesController";
 
 const router = Router();
 
-router.route("/itemId").post(likeItem).delete(unlikeItem);
+// expect item info in the request body (itemId, type, user)
+router.route("/item").post(likeItem).delete(unlikeItem);
 
 router.route("/").get(getLikes);
 

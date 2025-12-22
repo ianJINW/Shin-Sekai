@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Comment from "../models/commentModel";
 import Post from "../models/postModel";
+import { logger } from "../utils/logger";
 
 export const getComments = async (req: Request, res: Response) => {
   try {
@@ -9,7 +10,7 @@ export const getComments = async (req: Request, res: Response) => {
       .populate("post", "title");
     res.json({ comments, message: "すごいすごい" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error }, 'Failed to fetch all comments');
     res.status(500).json({ message: "やめやめ" });
   }
 };
@@ -23,7 +24,7 @@ export const getCommentsByPost = async (req: Request, res: Response) => {
       .populate("post", "title");
     res.json({ comments, message: "すごいすごい" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error, post }, 'Failed to fetch comments for post');
     res.status(500).json({ message: "やめやめ" });
   }
 }
@@ -36,7 +37,7 @@ export const getComment = async (req: Request, res: Response) => {
       .populate("post", "title");
     res.json({ comment, message: "すごいすごい" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error, id }, 'Failed to fetch comment');
     res.status(500).json({ message: "やめやめ" });
   }
 };
@@ -65,7 +66,7 @@ export const createComment = async (req: Request, res: Response) => {
     await Post.findByIdAndUpdate(post, { $inc: { commentsCount: 1 } });
     res.json({ comment, message: "すごいすごい" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error, post, user }, 'Failed to create comment');
     res.status(500).json({ message: "やめてやめて" });
   }
 };
@@ -78,7 +79,7 @@ export const deleteComment = async ( req: Request, res: Response) => {
     await Post.findByIdAndUpdate(post, {$inc: {commentsCount: -1}});
     res.json({ message: "すごいすごい" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error, id, post }, 'Failed to delete comment');
     res.status(500).json({ message: "やめてやめて" });
   }
 };
@@ -95,7 +96,7 @@ export const updateComment = async (req: Request, res: Response) => {
     (id, { content });
     res.json({ message: "すごいすごい" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error, id }, 'Failed to update comment');
     res.status(500).json({ message: "やめてやめて" });
   }
 };

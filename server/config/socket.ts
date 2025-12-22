@@ -1,23 +1,24 @@
 import { Server, Socket } from "socket.io";
 import { Message } from "../models/groupModel";
 import User from "../models/userModel";
+import { logger } from "../utils/logger";
 
 export function initSocket(io: Server) {
   io.on("connection", (socket: Socket) => {
-    console.log("🟢 Client connected:", socket.id);
+    logger.info({ socketId: socket.id }, 'Socket client connected');
 
     socket.on("message", (msg: string) => {
-      console.log("📨 Received message:", msg);
+      logger.info({ msg }, 'Socket received message');
       io.emit("message", msg);
     });
 
     socket.on('joinGroup', groupId => {
       socket.join(groupId)
-      console.info(`Joined room ${groupId} (socket ${socket.id})`)
+      logger.info({ groupId, socketId: socket.id }, `Joined room ${groupId}`)
     })
 
     socket.on('groupMessage', async ({ groupId, text, sender }) => {
-      console.log('groupMessage', { groupId, len: typeof text === 'string' ? text.length : 0, sender });
+      logger.debug({ groupId, len: typeof text === 'string' ? text.length : 0, sender }, 'groupMessage received');
 
       // Basic validation to avoid large payloads or bad input
       if (typeof text !== 'string' || text.trim().length === 0) {
@@ -44,13 +45,13 @@ export function initSocket(io: Server) {
           timestamp: msg.createdAt.toISOString()
         });
       } catch (err) {
-        console.error('Error handling groupMessage:', err);
+        logger.error({ err }, 'Error handling groupMessage');
         socket.emit('groupMessageError', { error: 'Failed to save message' });
       }
     })
 
     socket.on("disconnect", () => {
-      console.log("🔴 Client disconnected:", socket.id);
+      logger.info({ socketId: socket.id }, 'Socket client disconnected');
     });
   });
 }

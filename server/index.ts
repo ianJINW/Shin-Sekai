@@ -17,10 +17,11 @@ import likeRouter from "./routes/likesRoutes";
 import { createServer, Server } from "http";
 import { Server as socketServer } from "socket.io";
 import { initSocket } from "./config/socket";
+import { httpLogger, logger } from "./utils/logger";
 
 const app = express();
 const frontend = process.env.FRONTEND_URL;
-const PORT = process.env.PORT;
+const PORT = parseInt(process.env.PORT || '8080', 10);
 
 const server = createServer(app)
 
@@ -31,12 +32,25 @@ app.use(
 	})
 );
 
+app.use(httpLogger)
+
 app.use(cookieParser())
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
+app.use((err: any, req: any, res: any, next: any) => {
+	req.log.error({
+		err,
+		msg: err.message,
+		method: req.method,
+		url: req.originalUrl,
+		status: res.statusCode
+	}, "Unhandled error");
+
+	res.status(500).json({ error: "Internal Server Error" });
+});
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/anime", animeRouter);
@@ -58,5 +72,20 @@ connectDB();
 initSocket(io)
 
 server.listen(PORT, () => {
-	console.log(`Server running on port ${PORT}`);
+	logger.info({ port: PORT }, `Server running`);
+});
+
+// graceful shutdown and error handlers
+process.on('uncaughtException', (err) => {
+	logger.error({ err }, 'Uncaught Exception');
+	process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+	logger.error({ reason }, 'Unhandled Rejection');
+});
+
+process.on('SIGTERM', () => {
+	logger.info('SIGTERM received, shutting down');
+	server.close(() => process.exit(0));
 });

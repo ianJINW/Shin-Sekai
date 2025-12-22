@@ -3,6 +3,7 @@ import Group from "../models/groupModel";
 import { Message } from "../models/groupModel";
 import { cloudinary } from "../middleware/multer";
 import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
+import { logger } from "../utils/logger";
 
 export const getGroups = async (req: Request, res: Response) => {
   try {
@@ -27,7 +28,7 @@ export const getGroupMembers = async (req: Request, res: Response) => {
     }
     res.json({ members, message: "すごいすごい" });
   } catch (error) {
-    console.log('erro');
+    logger.warn({ err: error }, 'Failed to fetch group members');
 
     res.status(500).json({ message: "ばかばか" });
   }
@@ -37,7 +38,7 @@ export const getGroup = async (req: Request, res: Response) => {
   const { groupId } = req.params;
   try {
     const group = await Group.findById(groupId).populate('members.user', 'username image')
-    console.log(group);
+    logger.debug({ groupId, group }, 'Fetched group details');
 
     if (!group) {
       res.status(404).json({ message: "Group not found" });
@@ -122,7 +123,7 @@ export const createGroup = async (req: Request, res: Response) => {
   if (req.file) {
     const file = req.file;
 
-    console.log("image", req.file);
+    logger.debug({ hasFile: true, fileName: (req.file as any)?.originalname }, 'Received group image upload');
 
     try {
       image = await new Promise<string>((resolve, reject) => {
@@ -139,7 +140,7 @@ export const createGroup = async (req: Request, res: Response) => {
         stream.end(file.buffer);
       });
     } catch (error) {
-      console.error("Image upload failed", error);
+      logger.error({ err: error }, 'Image upload failed');
       res.status(500).json({ message: "Image upload failed", error });
       return;
     }
@@ -149,7 +150,7 @@ export const createGroup = async (req: Request, res: Response) => {
   // Multer parses fields as strings; sanitize the user field
   let user = typeof req.body.user === "string" ? req.body.user.trim() : String(req.body.user ?? "").trim();
 
-  console.log("req", req.body);
+  logger.debug({ body: req.body }, 'Create group request body');
 
   if (!user || user === "undefined") {
     res.status(400).json({ message: "User is required" });
@@ -165,11 +166,11 @@ export const createGroup = async (req: Request, res: Response) => {
     });
 
     await group.save();
-    console.log(group);
+    logger.info({ groupId: group._id }, 'Group created');
 
     res.json({ group, message: "すごいすごい" });
   } catch (error) {
-    console.log(`error ${error}`);
+    logger.error({ err: error }, 'Failed to create group');
     res.status(500).json({ message: "ばかばか" });
   }
 };
@@ -209,7 +210,7 @@ export const joinGroup = async (req: Request, res: Response) => {
       group,
     });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error }, 'Failed to join group');
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -217,7 +218,7 @@ export const joinGroup = async (req: Request, res: Response) => {
 export const promoteUser = async (req: Request, res: Response) => {
   const { groupId } = req.params;
   const { user, adminId } = req.body;
-  console.log(req.body);
+  logger.debug({ body: req.body }, 'Promote user request');
   try {
     const group = await Group.findById(groupId);
     if (!group) {
