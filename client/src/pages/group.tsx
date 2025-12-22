@@ -5,6 +5,8 @@ import useSocket, { socket } from "../hooks/useSocket";
 import PageSkeleton from "../components/ui/PageSkeleton";
 import { toast } from 'sonner';
 import useAuthStore from "../store/auth.store";
+import Button from '../components/ui/button';
+import { MenuIcon } from "lucide-react";
 
 export interface Member {
   id: number
@@ -102,8 +104,8 @@ const Group: FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-50 w-full">
       {/* 📌 Group Header */}
-      <header className="bg-white shadow-md px-6 py-4 flex items-center gap-4">
-        <img onClick={() => navigate(`/groups/info/${group._id}`)}
+      <header className="bg-white shadow-md px-6 py-4 flex justify-between align-center items-center gap-4" onClick={() => navigate(`/groups/info/${group._id}`)} >
+        <img
           src={group.image || '360_F_1591643371_wRpP6nKXtgWJWPNKokRvjwwaXEfZz5qX.webp'}
             alt={`Group ${group.name}`}
             className="w-12 h-12 rounded-full object-cover border-2 border-indigo-300"
@@ -114,6 +116,11 @@ const Group: FC = () => {
           <h1 className="text-xl font-semibold text-gray-900">{group?.name}</h1>
           <p className="text-sm text-gray-500">{group?.description}</p>
         </div>
+
+        <Button onClick={() => {
+          console.log('doing something');
+        }} variant="ghost" className=""   > <MenuIcon /></Button>
+
       </header>
 
       {/* 🗨️ Messages */}

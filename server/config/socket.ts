@@ -17,7 +17,18 @@ export function initSocket(io: Server) {
     })
 
     socket.on('groupMessage', async ({ groupId, text, sender }) => {
-      console.log('groupMessage', { groupId, text, sender });
+      console.log('groupMessage', { groupId, len: typeof text === 'string' ? text.length : 0, sender });
+
+      // Basic validation to avoid large payloads or bad input
+      if (typeof text !== 'string' || text.trim().length === 0) {
+        socket.emit('groupMessageError', { error: 'Message text required' });
+        return;
+      }
+
+      if (text.length > 2000) {
+        socket.emit('groupMessageError', { error: 'Message too long (max 2000 chars)' });
+        return;
+      }
 
       try {
         // find sender details to include username/avatar

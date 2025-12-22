@@ -40,7 +40,7 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
       toast.promise(
         loginMutate({ email: form_Data.email, password: form_Data.password }),
         {
-          loading: "Logging...",
+          loading: "Logging in...",
           success: "Logged successfully!",
           error: `Login failed. ${loginError}`,
         }

@@ -44,11 +44,15 @@ export const getGroup = async (req: Request, res: Response) => {
       return;
     }
 
-    // include recent messages when fetching a group
+    // include recent messages when fetching a group — limit to most recent 200 to avoid large payloads
     const messages = await Message.find({ group: groupId })
       .populate('sender', 'username image')
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
+      .limit(200)
       .lean();
+
+    // return in chronological order (oldest first)
+    messages.reverse();
 
     res.json({ group, messages, message: "すごいすごい" });
   } catch (error) {
@@ -172,32 +176,41 @@ export const createGroup = async (req: Request, res: Response) => {
 
 export const joinGroup = async (req: Request, res: Response) => {
   const { groupId } = req.params;
-  const { user } = req.body;
-  if (!user) {
-    res.status(400).json({ message: "ばかばか" });
-    return;
+  const { userId } = req.body; 
+
+  if (!userId || !groupId) {
+    return res.status(400).json({ message: "Missing required fields" });
   }
 
-  if (!groupId) {
-    res.status(400).json({ message: "ばかばか" });
-    return;
-  }
   try {
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).populate("members.user", "username");
+
     if (!group) {
-      res.status(404).json({ message: "Group not found" });
-      return;
+      return res.status(404).json({ message: "Group not found" });
     }
-    const isMember = group.members.find((member) => member.user.toString() === user);
+
+    // Check if user already in group
+    const isMember = group.members.some(m => m.user.toString() === userId);
     if (isMember) {
-      res.status(400).json({ message: "ばかばか" });
-      return;
+      return res.status(400).json({ message: "User already a member" });
     }
-    group?.members.push({ user, role: "member" });
-    await group?.save();
-    res.json({ group, message: "すごいすごい" });
+
+    // Add member
+    group.members.push({
+      user: userId,
+      role: "member",
+      joinedAt: new Date(),
+    });
+
+    await group.save();
+
+    return res.status(200).json({
+      message: "Joined group successfully",
+      group,
+    });
   } catch (error) {
-    res.status(500).json({ message: "ばかばか" });
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
