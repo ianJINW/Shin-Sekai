@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import envConfig from "../config/env.config";
 
@@ -36,29 +36,30 @@ if (!socketInitialized) {
 }
 
 const useSocket = (event: string, handler: (data: unknown) => void) => {
-  useEffect(() => {
-    // Log when hook runs
-    console.log(`[useSocket] subscribing to event: "${event}"`);
+  const handlerRef = useRef(handler);
 
-    // Connect (only if not already)
+  // keep a stable reference to the handler
+  useEffect(() => {
+    handlerRef.current = handler;
+  }, [handler]);
+
+  useEffect(() => {
+  // connect once
     if (!socket.connected) {
-      console.log("[socket] attempting to connect…");
       socket.connect();
     }
 
-    // named listener so we can clean it up
     const listener = (data: unknown) => {
-      console.log(`[socket] received "${event}":`, data);
-      handler(data);
+      handlerRef.current(data);
     };
 
     socket.on(event, listener);
 
     return () => {
-      console.log(`[useSocket] unsubscribing from event: "${event}"`);
       socket.off(event, listener);
     };
-  }, [event, handler]);
+  }, [event]);
 };
+
 
 export default useSocket;
