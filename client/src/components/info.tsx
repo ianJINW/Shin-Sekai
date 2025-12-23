@@ -45,7 +45,7 @@ const Info: FC = () => {
     return u._id ?? u.id ?? undefined
   }
 
-  const isMember = !!userId && group.members.some((m) => memberId(m) === userId);
+  const isMember = !!userId && group.members.some((m: any) => memberId(m) === userId);
 
   return (
     <main
@@ -82,7 +82,7 @@ const Info: FC = () => {
             Members ({group.members.length})
           </h2>
 
-          <ul className="gap-4 flex flex-col ">{console.log('members', group.members)}
+          <ul className="gap-4 flex flex-col ">
             {group.members.map((m: any) => {
               const userObj = typeof m.user === "object" ? m.user : undefined;
               const key = userObj?._id ?? String(m.user);

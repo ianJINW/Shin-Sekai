@@ -1,4 +1,4 @@
-import { type FC, useState, type FormEventHandler, useEffect } from "react";
+import { type FC, useState, type FormEventHandler, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetInfo, usePostInfo } from "../lib/apiRequests";
 import useSocket, { socket } from "../hooks/useSocket";
@@ -6,7 +6,7 @@ import PageSkeleton from "../components/ui/PageSkeleton";
 import { toast } from 'sonner';
 import useAuthStore from "../store/auth.store";
 import Button from '../components/ui/button';
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, UserIcon } from 'lucide-react';
 
 export interface Member {
   id: number
@@ -34,6 +34,8 @@ const Group: FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
   const group = data?.group;
 
   useEffect(() => {
@@ -41,7 +43,6 @@ const Group: FC = () => {
 
     const join = () => {
       socket.emit("joinGroup", group._id);
-      console.log(`[client] joining group room ${group._id}`);
     };
 
     if (socket.connected) {
@@ -54,6 +55,10 @@ const Group: FC = () => {
       socket.off("connect", join);
     };
   }, [group?._id]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages])
 
   // populate messages when group data loads
   useEffect(() => {
@@ -104,12 +109,12 @@ const Group: FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-50 w-full">
       {/* 📌 Group Header */}
-      <header className="bg-white shadow-md px-6 py-4 flex justify-between align-center items-center gap-4" onClick={() => navigate(`/groups/info/${group._id}`)} >
-        <img
+      <header className="bg-white shadow-md px-6 py-4 flex justify-between w-full items-center gap-4" onClick={() => navigate(`/groups/info/${group._id}`)} >
+        {group.image ? <img
           src={group.image || '360_F_1591643371_wRpP6nKXtgWJWPNKokRvjwwaXEfZz5qX.webp'}
             alt={`Group ${group.name}`}
             className="w-12 h-12 rounded-full object-cover border-2 border-indigo-300"
-          />
+        /> : <UserIcon />}
 
         <div
         >
@@ -117,9 +122,7 @@ const Group: FC = () => {
           <p className="text-sm text-gray-500">{group?.description}</p>
         </div>
 
-        <Button onClick={() => {
-          console.log('doing something');
-        }} variant="ghost" className=""   > <MenuIcon /></Button>
+        <Button onClick={() => { /* menu action */ }} variant="ghost" className=""   > <MenuIcon /></Button>
 
       </header>
 
@@ -130,49 +133,72 @@ const Group: FC = () => {
         ) : messages.length === 0 ? (
           <p className="text-center text-gray-400">No messages yet</p>
         ) : (
-              messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`max-w-xs px-3 py-2 rounded-2xl shadow-sm text-sm break-words ${i % 2 === 0
-                    ? "ml-auto bg-indigo-500 text-white"
-                    : "mr-auto bg-gray-200 text-gray-900"
-                    }`}
-                >
-                  {/* Sender header */}
-                  {msg.sender && (
-                    <div className="flex items-center gap-2 mb-1">
-                      {msg.sender.image ? (
-                        <img src={msg.sender.image} alt={msg.sender.username} className="w-5 h-5 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-gray-300 text-[10px] flex items-center justify-center text-gray-700">
-                          {msg.sender.username ? msg.sender.username[0]?.toUpperCase() : "?"}
-                        </div>
-                      )}
-                      <div className="text-xs text-gray-700 font-medium">
-                        {msg.sender.username ?? "Unknown"}
-                      </div>
-                    </div>
-                  )}
-
-                  {msg.text}
-
-                  <div className="text-[10px] text-gray-300 text-right mt-1">
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
+              <>
+                {messages.map((msg, i) => (
+                  <div
+          key={msg._id ?? i}
+          className={`max-w-xs px-3 py-2 rounded-2xl shadow-sm text-sm break-words ${msg.sender?._id === user?._id
+              ? "ml-auto bg-indigo-500 text-white"
+              : "mr-auto bg-gray-200 text-gray-900"
+            }`}
+        >
+          {/* Sender */}
+          {msg.sender && (
+            <div className="flex items-center gap-2 mb-1">
+              {msg.sender.image ? (
+                <img
+                  src={msg.sender.image}
+                  alt={msg.sender.username}
+                  className="w-5 h-5 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-gray-300 text-[10px] flex items-center justify-center">
+                  {msg.sender.username?.[0]?.toUpperCase() ?? "?"}
                 </div>
-              ))
+              )}
+              <span className="text-xs font-medium">
+                {msg.sender.username ?? "Unknown"}
+              </span>
+            </div>
+          )}
 
+          {msg.text}
+
+          <div className="text-[10px] text-gray-300 text-right mt-1">
+            {new Date(msg.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        </div>
+      ))}
+
+                {/* 👇 Scroll anchor */}
+                <div ref={messagesEndRef} />
+              </>
         )}
       </main>
 
+
       {/* ✉️ Input Bar */}
-      <form onSubmit={sendMsg}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} />
-        <button type="submit">Send</button>
+      <form
+        onSubmit={sendMsg}
+        className="border-t bg-white p-3 flex gap-2"
+      >
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="flex-1 border rounded-lg px-3 py-2 outline-none"
+          placeholder="Type a message…"
+        />
+        <button
+          type="submit"
+          className="bg-indigo-500 text-white px-4 py-2 rounded-lg"
+        >
+          Send
+        </button>
       </form>
+
 
       {/* ⚠️ Error */}
       {sendingError && (

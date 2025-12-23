@@ -307,7 +307,13 @@ export const demoteUser = async (req: Request, res: Response) => {
 
 export const leaveGroup = async (req: Request, res: Response) => {
   const { groupId } = req.params;
-  const { user } = req.body;
+  // accept either { user } or { userId } from client
+  const userId = req.body.userId ?? req.body.user;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'Missing userId' });
+  }
+
   try {
     const group = await Group.findById(groupId);
     if (!group) {
@@ -315,7 +321,7 @@ export const leaveGroup = async (req: Request, res: Response) => {
       return;
     }
     const member = group.members.find(
-      (member) => member.user.toString() === user
+      (member) => member.user.toString() === userId
     );
     if (!member) {
       res.status(404).json({ message: "Member not found" });
@@ -329,13 +335,14 @@ export const leaveGroup = async (req: Request, res: Response) => {
     }
 
     const index = group.members.findIndex(
-      (member) => member.user.toString() === user
+      (member) => member.user.toString() === userId
     );
     group.members.splice(index, 1);
 
     await group.save();
     res.json({ group, message: "すごいすごい" });
   } catch (error) {
+    logger.error({ err: error, groupId, userId }, 'Failed to leave group');
     res.status(500).json({ message: "ばかばか" });
   }
 };
