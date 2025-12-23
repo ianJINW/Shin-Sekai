@@ -71,7 +71,7 @@ const io = new socketServer(server, {
 connectDB();
 initSocket(io)
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, "0.0.0.0", () => {
 	logger.info({ port: PORT }, `Server running`);
 });
 
