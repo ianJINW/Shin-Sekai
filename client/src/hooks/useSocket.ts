@@ -57,7 +57,6 @@ const useSocket = (event: string, handler: (data: unknown) => void) => {
     return () => {
       console.log(`[useSocket] unsubscribing from event: "${event}"`);
       socket.off(event, listener);
-      // do NOT disconnect the shared socket here — other components may still use it
     };
   }, [event, handler]);
 };

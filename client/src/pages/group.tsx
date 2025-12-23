@@ -33,8 +33,10 @@ const Group: FC = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [bottom, setBottom] = useState(true)
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null)
 
   const group = data?.group;
 
@@ -57,9 +59,26 @@ const Group: FC = () => {
   }, [group?._id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages])
+    if (bottom) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, bottom])
 
+  useEffect(() => {
+    const cont = messagesContainerRef.current
+
+    if (!cont) return
+
+    const handleScroll = () => {
+      const atBottom = cont.scrollHeight - cont.scrollTop - cont.clientHeight < 50
+      setBottom(atBottom)
+    }
+
+    cont.addEventListener('scroll', handleScroll)
+
+    return () => {
+      cont.removeEventListener('scroll', handleScroll)
+
+    }
+  }, [])
   // populate messages when group data loads
   useEffect(() => {
     if (!data?.messages) return;
@@ -127,7 +146,18 @@ const Group: FC = () => {
       </header>
 
       {/* 🗨️ Messages */}
-      <main className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      {!bottom && messages.length > 0 && (
+        <div
+          className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-4 py-2 rounded-lg cursor-pointer shadow-md"
+          onClick={() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          New messages
+        </div>
+      )}
+
+      <main ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {!group ? (
           <p className="text-center text-lg text-gray-600">No group found</p>
         ) : messages.length === 0 ? (
