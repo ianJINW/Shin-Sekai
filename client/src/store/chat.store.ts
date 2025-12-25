@@ -2,10 +2,10 @@ interface Message {
   _id?: string
   text: string
   timestamp: string
-  sender?: { _id: string; username: string; image?: string }
+  sender?: { _id: string; username?: string; image?: string }
 }
 interface ChatState {
-  messagesx: Message[]
+  messages: Message[]
   lastOpenedGroupId: string | null
   lastReadMessageId: string | null
 
@@ -13,7 +13,7 @@ interface ChatState {
   addMessage: (msg: Message) => void
   clearMessages: () => void
 
-  setLastOpenedGoupId: (id: string | null) => void
+  setLastOpenedGroupId: (id: string | null) => void
   setLastReadMessageId: (id: string | null) => void
 }
 
@@ -21,18 +21,18 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 const useChatStore = create<ChatState>()(persist(set => ({
-  messagesx: [],
+  messages: [],
   lastOpenedGroupId: null,
   lastReadMessageId: null,
 
-  setMessages: (msg) => set({ messagesx: msg }),
-  addMessage: msg => set(state => ({ messagesx: [...state.messagesx, msg] })),
-  clearMessages: () => set({ messagesx: [] }),
+  setMessages: (msg) => set({ messages: msg }),
+  addMessage: msg => set(state => ({ messages: [...state.messages, msg] })),
+  clearMessages: () => set({ messages: [] }),
 
-  setLastOpenedGoupId: (id) => set({ lastOpenedGroupId: id }),
+  setLastOpenedGroupId: (id) => set({ lastOpenedGroupId: id }),
   setLastReadMessageId: id => set({ lastReadMessageId: id })
 }), {
-  name: 'chat-storagex',
+  name: 'chat-storage',
   storage: createJSONStorage(() => localStorage),
 
   partialize: (state) => ({

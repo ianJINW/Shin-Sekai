@@ -82,7 +82,7 @@ const Groups: FC = () => {
                             key={member.id}
                             className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded"
                           >
-                            {member.user}
+                            {typeof member.user === 'string' ? member.user : (member.user?.username ?? 'Unknown')}
                           </span>
                         ))}
                         {group.members.length > 4 && (
