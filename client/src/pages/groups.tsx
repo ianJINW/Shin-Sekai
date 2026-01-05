@@ -30,7 +30,7 @@ const Groups: FC = () => {
 
   if (isPending) {
     return (
-      <PageSkeleton title="Groups loadding" count={8} />
+      <PageSkeleton title="Groups loading" count={8} />
     )
   }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FC, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { AuthProps } from "../pages/auth";
 import { LoginUser, usePostInfo } from "../lib/apiRequests";
 import { NavLink } from 'react-router-dom';
@@ -17,6 +17,7 @@ interface Form_Data {
 
 const FormAuth: FC<AuthProps> = ({ mode }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { mutateAsync: registerMutate, isSuccess, isPending, error: registerErr } = usePostInfo('/api/v1/user')
   const { mutateAsync: loginMutate, isSuccess: loginSuccess, isPending: loginending, error: loginError } = LoginUser('/api/v1/user/login')
 
@@ -86,9 +87,11 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
 
   useEffect(() => {
     if (loginSuccess) {
-      navigate("/");
+      const from = location.state?.from?.pathname || "/";
+
+      navigate(from, { replace: true })
     }
-  }, [loginSuccess, navigate]);
+  }, [loginSuccess, navigate, location.state?.from?.pathname]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-bg-primary text-text">

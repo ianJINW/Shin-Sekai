@@ -197,3 +197,17 @@ export const deleteUser = async (req: Request, res: Response) => {
 		return;
 	}
 };
+
+export const logout = async (req: Request, res: Response) => {
+	try {
+		res.clearCookie("token", {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+		});
+		return res.json({ message: "Logged out" });
+	} catch (error) {
+		res.status(500).json({ message: "An error occurred", error });
+		return;
+	}
+};

@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { Navigate } from "react-router-dom";
 import useAuthStore from "../store/auth.store";
+import { LogoutUser } from "../lib/apiRequests";
 import Button from "../components/ui/button";
 import FormAuth from "../components/formAuth";
 
@@ -10,7 +11,7 @@ export interface AuthProps {
 
 const Auth: FC<AuthProps> = ({ mode }) => {
   const isAuth = useAuthStore((state) => state.isAuth);
-  const logout = useAuthStore((state) => state.logout);
+  const { mutate: logoutMutate } = LogoutUser('/api/v1/user/logout');
 
   if (isAuth && mode !== "register") {
     // If authenticated and on login page, redirect to dashboard
@@ -27,7 +28,7 @@ const Auth: FC<AuthProps> = ({ mode }) => {
             <Button
               variant="primary"
               onClick={() => {
-                logout();
+                logoutMutate(undefined, { onSuccess: () => window.location.assign('/') });
               }}
               className="text-black"
             >
