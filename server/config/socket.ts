@@ -17,6 +17,10 @@ export function initSocket(io: Server) {
       logger.info({ groupId, socketId: socket.id }, `Joined room ${groupId}`)
     })
 
+    socket.on('apihit', (data) => {
+      logger.info('Api hit successful', data)
+    })
+
     socket.on('groupMessage', async ({ groupId, text, sender }) => {
       logger.debug({ groupId, len: typeof text === 'string' ? text.length : 0, sender }, 'groupMessage received');
 

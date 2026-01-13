@@ -51,6 +51,7 @@ const FormAuth: FC<AuthProps> = ({ mode }) => {
         username: '',
         email: '',
         password: '',
+        profile: undefined
       });
     } else {
       const data = new FormData();

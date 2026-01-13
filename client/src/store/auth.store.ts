@@ -1,8 +1,6 @@
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { getTimedGreetings } from "../components/exports";
-import api from "../lib/api";
 
 export interface User {
   id?: string;
@@ -29,12 +27,11 @@ export interface UserStore {
   isAdmin: boolean;
   login: (res: Loginres) => void;
   logout: () => void;
-  verifySession: () => Promise<void>;
 }
 
 const useAuthStore = create<UserStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuth: false,
       isAdmin: false,
@@ -54,19 +51,7 @@ const useAuthStore = create<UserStore>()(
         toast(`Logged out`);
       },
 
-      verifySession: async () => {
-        try {
-          const res = await api.get('/api/v1/user/auth', {
-            withCredentials: true,
-          });
-          get().login(res.data);
-          const greeting = getTimedGreetings();
-          toast.success(`${greeting?.phrase} ${res.data.user.username} Welcome!`);
-        } catch (err) {
-          toast.error(`Error verifying. ${err}`)
-          get().logout();
-        }
-      },
+
     }),
     {
       name: "auth-storage",
@@ -76,15 +61,7 @@ const useAuthStore = create<UserStore>()(
         isAuth: state.isAuth,
         isAdmin: state.isAdmin,
       }),
-      onRehydrateStorage: () => (state) => {
-        // After rehydration, verify the session if user exists
-        if (state?.user) {
-          // Call verifySession after a short delay to ensure store is ready
-          setTimeout(() => {
-            useAuthStore.getState().verifySession();
-          }, 100);
-        }
-      },
+
     }
   )
 );

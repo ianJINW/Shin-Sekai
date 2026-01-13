@@ -1,6 +1,6 @@
 import './App.css'
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { Toaster } from 'sonner'
+import { toast, Toaster } from 'sonner'
 
 import Navbar from './components/Navbar';
 import PageTransition from './components/PageTransition';
@@ -12,20 +12,15 @@ import Groups from './pages/groups';
 import Group from './pages/group';
 import Anime from './pages/anime';
 import Me from './pages/me';
-import { useEffect, type FC } from 'react';
-import useAuthStore from './store/auth.store';
+import { type FC } from 'react';
 import GroupInfo from './components/info';
+import useSocket from './hooks/useSocket';
 
 const App: FC = () => {
-  const verifySession = useAuthStore(s => s.verifySession)
-  const isAuth = useAuthStore(s => s.isAuth)
 
-  useEffect(() => {
-    // Only verify session if not already authenticated (after rehydration)
-    if (!isAuth) {
-      verifySession()
-    }
-  }, [verifySession, isAuth])
+  useSocket('apihit', () => {
+    toast.info('Connected.')
+  })
 
   const routes = [
     { path: '/register', element: <Auth mode='register' /> },

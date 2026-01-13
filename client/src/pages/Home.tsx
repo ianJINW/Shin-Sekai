@@ -1,43 +1,17 @@
 import Button from "../components/ui/button";
 import { Star, Users, Film, MessageSquare } from "lucide-react";
-import useAuthStore from "../store/auth.store";
 import { useNavigate } from "react-router-dom";
+import gojo from "../assets/gojo.jpeg";
 
 export default function Landing() {
-  const isAuth = useAuthStore(state => state.isAuth)
   const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-gradient-to-b from-background/80 to-background relative overflow-hidden font-small">
       {/* Background overlay/effect */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 z-0"></div>
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-40 z-0"
+        style={{ backgroundImage: `url(${gojo})` }} ></div>
 
-      {/* Header */}
-      <header className="container mx-auto px-4 py-6 flex justify-between items-center relative z-10 text-center">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold anime-gradient-text">
-            Shin-Sekai
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {isAuth ? (
-              <Button className="" variant="secondary" onClick={() => navigate('/logout')}>Log Out</Button>
-            ) : (
-              <>
-                <Button onClick={() => navigate("/register")} variant="primary" className="">
-                  Sign Up
-                </Button>
-                <Button
-                  variant="secondary" className=""
-                  onClick={() => navigate("/login")}
-                >
-                  Sign In
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
 
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-8 pb-24 relative z-10">
@@ -63,7 +37,7 @@ export default function Landing() {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-16 relative z-10">
         <h2 className="text-3xl font-bold text-center mb-12">
-          Why Join OtakuVerse?
+          Why Join Shin Sekai-_-The OtakuVerse?
         </h2>
         <div className="grid md:grid-cols-4 gap-8">
           <div className="anime-card p-6 flex flex-col items-center text-center">

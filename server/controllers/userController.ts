@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { sign, verify } from "jsonwebtoken";
 import User from "../models/userModel";
 import bcrypt from "bcryptjs";
 import { cloudinary } from "../middleware/multer";
 import { envConfig } from "../config/env.config";
 import { logger } from "../utils/logger";
+import RefreshToken from '../models/refreshModel';
 
 const secretKey = envConfig.jwtSecret;
 if (!secretKey) {
@@ -90,6 +91,63 @@ export const authCheck = async (req: Request, res: Response) => {
 	}
 }
 
+export const refresher = async (req: Request, res: Response) => {
+	const { refreshToken } = req.cookies
+	try {
+		if (!refreshToken) {
+			res.status(403).json({ error: `No refresh token!` })
+			return
+		}
+
+		const dbToken = await RefreshToken.findOne({ token: refreshToken });
+		if (!dbToken) return res.status(403).json({ error: "token reevoked" })
+
+		const decoded = verify(refreshToken, envConfig.jwtRefresh) as {
+			id: string
+		}
+
+		const user = await User.findById(decoded.id).select("-password")
+
+		if (!user) return res.status(401).json({ error: 'User not found' })
+
+		await RefreshToken.deleteOne({ _id: dbToken._id })
+
+		const payload = {
+			id: user.id,
+			email: user.email,
+			username: user.username,
+			image: user.image,
+			isAdmin: user.isAdmin,
+		};
+
+		const newToken = sign(payload, secretKey, { expiresIn: '1h' })
+		const newRefreshToken = sign(payload, envConfig.jwtRefresh, { expiresIn: '1d' })
+
+		const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+		await RefreshToken.create({ user: user._id, token: newRefreshToken, expiresAt })
+
+		res.cookie("token", newToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: 24 * 60 * 60 * 1000,
+		});
+
+		res.cookie("refreshToken", newRefreshToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: 24 * 60 * 60 * 1000,
+		});
+
+
+		return res.json({ accessToken: newToken })
+	} catch (err) {
+		return res.status(401).json({ error: "Refresh failed", details: err });
+	}
+}
+
+
 export const login = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
 	if (!email || !password) {
@@ -119,15 +177,19 @@ export const login = async (req: Request, res: Response) => {
 			isAdmin: user.isAdmin,
 		};
 		const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+		const refreshToken = sign(payload, envConfig.jwtRefresh, { expiresIn: '1d' })
 
-		res.cookie("token", token, {
+		const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+		await RefreshToken.create({ user: user._id, token: refreshToken, expiresAt })
+
+		res.cookie("refreshToken", refreshToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "strict",
 			maxAge: 24 * 60 * 60 * 1000,
 		});
 
-		res.json({ message: "Login successful", user: { id: user.id, role: user.role, email: user.email, username: user.username, image: user.image } });
+		res.json({ message: "Login successful", token, user: { id: user.id, role: user.role, email: user.email, username: user.username, image: user.image } });
 		return;
 	} catch (error) {
 		res.status(500).json({ message: `An error occurred, ${error}` });
@@ -200,11 +262,22 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
 	try {
+		const { refreshToken } = req.cookies
+
+		await RefreshToken.deleteOne({ token: refreshToken });
+
 		res.clearCookie("token", {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "strict",
 		});
+
+		res.clearCookie("refreshToken", {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+		});
+
 		return res.json({ message: "Logged out" });
 	} catch (error) {
 		res.status(500).json({ message: "An error occurred", error });
