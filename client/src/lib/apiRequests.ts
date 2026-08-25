@@ -14,7 +14,6 @@ const usePostInfo = <T = unknown>(url: string) => {
     },
     onError: (error) => {
       console.error('Error sending info', error);
-
     }
   })
 }
